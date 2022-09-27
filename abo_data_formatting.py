@@ -29,14 +29,12 @@ class ABO:
                         self.gathered_data["color"].append(np.nan)
 
     def map_metadata_to_images(self):
-        #with gzip.open(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", 'rt') as f:
-        #    csv_file = csv.reader(f, delimiter=',')
-        #    for row in csv_file:
-        #        print(row)
         images_metadata_df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')
+        for image in self.gathered_data["main_image_id"]:
+            self.gathered_data["image_path"].append(images_metadata_df[images_metadata_df["image_id"]==image]["path"].item())
 
     def build_exploitable_dataset_from_raw_data(self):
-        #self.read_metadata()
+        self.read_metadata()
         self.map_metadata_to_images()
         print(self.gathered_data["main_image_id"][0:5], self.gathered_data["product_type"][0:5], self.gathered_data["color"][0:5], self.gathered_data["image_path"][0:5])
 

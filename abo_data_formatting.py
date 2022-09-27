@@ -31,13 +31,9 @@ class ABO:
     def map_metadata_to_images(self):
         #with gzip.open(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", 'rt') as f:
         #    csv_file = csv.reader(f, delimiter=',')
-        #    counter = 0
         #    for row in csv_file:
-        #        if counter <=1:
-        #            print(row)
-        #            counter +=1
-        df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')
-        print(df['image_id'])
+        #        print(row)
+        images_metadata_df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')
 
     def build_exploitable_dataset_from_raw_data(self):
         #self.read_metadata()

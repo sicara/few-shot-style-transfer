@@ -1,7 +1,9 @@
 import os
 import gzip
 import json
+import csv
 import numpy as np
+import pandas as pd
 
 class ABO:
     def __init__(self, path_to_abo_dataset_folder):
@@ -10,7 +12,7 @@ class ABO:
 
     def read_metadata(self):
         for json_file in os.listdir(self.path_to_abo_dataset_folder+"/listings/metadata"):
-            f = os.path.join(self.path_to_abo_dataset_folder+"/listings/metadata",json_file)
+            f1 = os.path.join(self.path_to_abo_dataset_folder+"/listings/metadata",json_file)
             print(json_file)
             with gzip.open(self.path_to_abo_dataset_folder+"/listings/metadata/"+json_file, 'r') as f:
                 data = [json.loads(line) for line in f]
@@ -27,10 +29,18 @@ class ABO:
                         self.gathered_data["color"].append(np.nan)
 
     def map_metadata_to_images(self):
-        pass
+        #with gzip.open(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", 'rt') as f:
+        #    csv_file = csv.reader(f, delimiter=',')
+        #    counter = 0
+        #    for row in csv_file:
+        #        if counter <=1:
+        #            print(row)
+        #            counter +=1
+        df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')
+        print(df['image_id'])
 
     def build_exploitable_dataset_from_raw_data(self):
-        self.read_metadata()
+        #self.read_metadata()
         self.map_metadata_to_images()
         print(self.gathered_data["main_image_id"][0:5], self.gathered_data["product_type"][0:5], self.gathered_data["color"][0:5], self.gathered_data["image_path"][0:5])
 

@@ -5,6 +5,8 @@ import csv
 import numpy as np
 import pandas as pd
 
+from utils import printProgressBar
+
 class ABO:
     def __init__(self, path_to_abo_dataset_folder):
         self.path_to_abo_dataset_folder = path_to_abo_dataset_folder
@@ -30,8 +32,11 @@ class ABO:
 
     def map_metadata_to_images(self):
         images_metadata_df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')
-        for image in self.gathered_data["main_image_id"]:
-            self.gathered_data["image_path"].append(images_metadata_df[images_metadata_df["image_id"]==image]["path"].item())
+        n=len(self.gathered_data["main_image_id"])
+        printProgressBar(0,n, length=50)
+        for i in range(n):
+            self.gathered_data["image_path"].append(images_metadata_df[images_metadata_df["image_id"]==self.gathered_data["main_image_id"][i]]["path"].item())
+            printProgressBar(i+1, n, length=50)
 
     def build_exploitable_dataset_from_raw_data(self):
         self.read_metadata()

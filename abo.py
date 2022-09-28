@@ -1,4 +1,4 @@
-from typing import Callable, Tuple
+from typing import Callable, Tuple, List
 import pandas as pd
 from pandas import DataFrame
 from torch import Tensor
@@ -35,3 +35,9 @@ class ABO(FewShotDataset):
         label = self.data.label[item]
 
         return img, label
+
+    def __len__(self) -> int:
+        return len(self.data)
+
+    def get_labels(self) -> List[int]:
+        return list(self.data.label)

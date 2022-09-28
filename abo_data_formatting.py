@@ -13,6 +13,8 @@ class ABO:
         self.gathered_data = {"main_image_id": [], "product_type": [], "color": [], "image_path": []}
 
     def read_metadata(self):
+        i=0
+        printProgressBar(i, 16, length=50)
         for json_file in os.listdir(self.path_to_abo_dataset_folder+"/listings/metadata"):
             f1 = os.path.join(self.path_to_abo_dataset_folder+"/listings/metadata",json_file)
             with gzip.open(self.path_to_abo_dataset_folder+"/listings/metadata/"+json_file, 'r') as f:
@@ -28,6 +30,8 @@ class ABO:
                             self.gathered_data["color"].append(np.nan)
                     else:
                         self.gathered_data["color"].append(np.nan)
+            i+=1
+            printProgressBar(i, 16, length=50)
 
     def map_metadata_to_images(self):
         images_metadata_df = pd.read_csv(self.path_to_abo_dataset_folder+"/images/metadata/images.csv.gz", compression='gzip')

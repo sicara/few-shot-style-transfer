@@ -1,59 +1,46 @@
-import os
 import gzip
 import json
-import csv
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from pathlib import Path
 
 
 class ABOFormatting:
     def __init__(self, path_to_abo_dataset_folder):
         self.path_to_abo_dataset_folder = path_to_abo_dataset_folder
-        self.gathered_data = {"main_image_id": [], "product_type": [], "color": [], "image_path": []}
+        self.metadata = pd.DataFrame()
+        self.gathered_data = pd.DataFrame()
 
     def read_metadata(self):
         print("Metadata collection:")
-        for json_file in tqdm(os.listdir(self.path_to_abo_dataset_folder + "/listings/metadata")):
-            f1 = os.path.join(self.path_to_abo_dataset_folder + "/listings/metadata", json_file)
-            with gzip.open(self.path_to_abo_dataset_folder + "/listings/metadata/" + json_file, "r") as f:
+        metadata_dict = {"main_image_id": [], "product_type": [], "color": []}
+        json_files = list(Path(self.path_to_abo_dataset_folder + "/listings/metadata").iterdir())
+        for json_file in tqdm(json_files):
+            with gzip.open(f"{json_file}", "r") as f:
                 data = [json.loads(line) for line in f]
             for product in data:
                 if "main_image_id" in product:
-                    self.gathered_data["main_image_id"].append(product["main_image_id"])
-                    self.gathered_data["product_type"].append(product["product_type"][0]["value"])
-                    if "color" in product:
-                        if "standardized_values" in product["color"][0]:
-                            self.gathered_data["color"].append(product["color"][0]["standardized_values"][0])
-                        else:
-                            self.gathered_data["color"].append(np.nan)
-                    else:
-                        self.gathered_data["color"].append(np.nan)
+                    metadata_dict["main_image_id"].append(product["main_image_id"])
+                    metadata_dict["product_type"].append(product["product_type"][0]["value"])
+                    metadata_dict["color"].append(
+                        product["color"][0]["standardized_values"][0]
+                        if ("color" in product and "standardized_values" in product["color"][0])
+                        else np.nan
+                    )
+        self.metadata = pd.DataFrame.from_dict(metadata_dict, orient="columns")
+        self.metadata.set_index("main_image_id", inplace=True)
 
     def map_metadata_to_images(self):
         images_metadata_df = pd.read_csv(
             self.path_to_abo_dataset_folder + "/images/metadata/images.csv.gz", compression="gzip"
         )
-        images_number = len(self.gathered_data["main_image_id"])
-        print("Map metadata to image path:")
-        for i in tqdm(range(images_number)):
-            self.gathered_data["image_path"].append(
-                images_metadata_df[images_metadata_df["image_id"] == self.gathered_data["main_image_id"][i]][
-                    "path"
-                ].item()
-            )
+        self.gathered_data = pd.merge(
+            self.metadata, images_metadata_df, how="left", left_on="main_image_id", right_on="image_id"
+        )[["product_type", "color", "image_id", "path"]]
+        self.gathered_data.set_index("image_id", inplace=True)
 
-    def write_to_csv(self):
-        with open("gathered_abo_data_a.csv", "w") as f:
-            writer = csv.writer(f)
-            feature_list = list(self.gathered_data.keys())
-            writer.writerow(self.gathered_data.keys())
-            product_number = len(self.gathered_data[feature_list[0]])
-            print("Write gathered data to csv file:")
-            for feature in tqdm(range(product_number)):
-                writer.writerow([self.gathered_data[key][feature] for key in feature_list])
-
-    def build_exploitable_dataset_from_raw_data(self):
+    def build_metadata_csv_from_raw_data(self):
         self.read_metadata()
         self.map_metadata_to_images()
-        self.write_to_csv()
+        self.gathered_data.to_csv("gathered_abo_data_a.csv")

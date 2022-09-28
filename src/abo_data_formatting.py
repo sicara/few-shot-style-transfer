@@ -5,6 +5,8 @@ import pandas as pd
 from tqdm import tqdm
 from pathlib import Path
 
+from src.config import ROOT_FOLDER
+
 
 class ABOFormatting:
     def __init__(self, path_to_abo_dataset_folder):
@@ -43,4 +45,4 @@ class ABOFormatting:
     def build_metadata_csv_from_raw_data(self):
         self.read_metadata()
         self.map_metadata_to_images()
-        self.gathered_data.to_csv("gathered_abo_data_a.csv")
+        self.gathered_data.to_csv(f"{ROOT_FOLDER}/src/datasets/gathered_abo_data.csv")

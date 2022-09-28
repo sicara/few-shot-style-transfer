@@ -5,7 +5,7 @@ import csv
 import numpy as np
 import pandas as pd
 
-from utils import printProgressBar
+from src.utils import printProgressBar
 
 class ABOFormatting:
     def __init__(self, path_to_abo_dataset_folder):
@@ -42,7 +42,7 @@ class ABOFormatting:
             printProgressBar(i+1, images_number, length=50, prefix="Map metadata to image path:")
 
     def write_to_csv(self):
-        with open("gathered_abo_data.csv", "w") as f:
+        with open("gathered_abo_data_a.csv", "w") as f:
             writer = csv.writer(f)
             feature_list = list(self.gathered_data.keys())
             writer.writerow(self.gathered_data.keys())
@@ -58,5 +58,3 @@ class ABOFormatting:
         self.read_metadata()
         self.map_metadata_to_images()
         self.write_to_csv()
-
-ABOFormatting("abo_dataset").build_exploitable_dataset_from_raw_data()

@@ -16,15 +16,17 @@ class ABO(FewShotDataset):
         transform: Callable = None,
         training: bool = False,
     ):
-        self.root = "abo_dataset/images/small"
+        self.root = root
         self.data = self.load_specs(specs_file)
         self.class_names = list(self.data["product_type"].unique())
         self.transform = (transform if transform else default_transform(image_size, training=training))
 
-    def load_specs(self, specs_file: str) -> DataFrame:
+    @staticmethod
+    def load_specs(specs_file: str) -> DataFrame:
         data = pd.read_csv(specs_file)
+        class_names = list(data["product_type"].unique())
 
-        label_mapping = {name: self.class_names.index(name) for name in self.class_names}
+        label_mapping = {name: class_names.index(name) for name in class_names}
 
         return data.assign(label=lambda df: df["product_type"].map(label_mapping))
 
@@ -41,3 +43,5 @@ class ABO(FewShotDataset):
 
     def get_labels(self) -> List[int]:
         return list(self.data.label)
+
+print(ABO("abo_dataset/images/small").__getitem__(12))

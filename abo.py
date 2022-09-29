@@ -37,7 +37,7 @@ class ABO(FewShotDataset):
         self.transform = transform if transform else default_transform(image_size, training=training)
 
     @staticmethod
-    def load_specs(specs_file: str) -> DataFrame:
+    def load_specs(specs_file: Union[Path, str]) -> DataFrame:
         data = pd.read_csv(specs_file)
         class_names = list(data["product_type"].unique())
 

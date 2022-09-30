@@ -7,15 +7,14 @@ from PIL import Image
 
 from easyfsl.datasets import FewShotDataset
 from easyfsl.datasets.default_configs import default_transform
-
-ROOT_FOLDER = Path(__file__).parent  # CHANGE with the config.py
+from src.config import ROOT_FOLDER
 
 
 class ABO(FewShotDataset):
     def __init__(
         self,
         root: Union[Path, str],
-        specs_file: Union[Path, str] = ROOT_FOLDER / "gathered_abo_data.csv",
+        specs_file: Union[Path, str] = ROOT_FOLDER / "src" / "datasets" / "gathered_abo_data.csv",
         image_size: int = 84,
         transform: Callable = None,
         training: bool = False,
@@ -46,7 +45,7 @@ class ABO(FewShotDataset):
         return data.assign(label=lambda df: df["product_type"].map(label_mapping))
 
     def __getitem__(self, item: int) -> Tuple[Tensor, int]:
-        img = self.transform(Image.open(self.root / self.data.image_path[item]).convert("RGB"))
+        img = self.transform(Image.open(self.root / self.data.path[item]).convert("RGB"))
         label = self.data.label[item]
 
         return img, label

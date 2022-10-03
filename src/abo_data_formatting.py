@@ -50,6 +50,8 @@ class ABOFormatting:
             lambda row: self.translation_to_en(row.color, row.language), axis=1
         )
         self.metadata_df = pd.merge(self.metadata_df, color_grouped_df, on=["color"], how="left")
+        self.metadata_df["en_color"] = self.metadata_df["en_color"].replace("gray", "grey")
+        self.metadata_df["en_color"] = self.metadata_df["en_color"].replace("multi", "multi-colored")
 
     def map_metadata_to_images(self):
         images_metadata_df = pd.read_csv(

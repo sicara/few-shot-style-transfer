@@ -44,8 +44,9 @@ class ABOFormatting:
             return np.nan
 
     def uniformize_color_names(self):
+        tqdm.pandas(desc="Colors translation")
         color_grouped_df = self.metadata_df.groupby(["color", "language"])["color"].count().reset_index(name="count")
-        color_grouped_df["en_color"] = color_grouped_df.apply(
+        color_grouped_df["en_color"] = color_grouped_df.progress_apply(
             lambda row: self.translation_to_en(row.color, row.language), axis=1
         )
         self.metadata_df = pd.merge(self.metadata_df, color_grouped_df, on=["color"], how="left")

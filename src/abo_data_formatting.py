@@ -50,34 +50,47 @@ class ABOFormatting:
 
     def translation_to_en(self, text, src_language):
         if len(text) > 1:
-            try:
-                return re.sub(
-                    r"[^a-zA-Z]", "", self.translator.translate(text, dest="en", src=src_language).text.lower()
-                )
-            except IndexError:
+            if src_language != "en":
                 try:
-                    return re.sub(r"[^a-zA-Z]", "", self.translator.translate(text, dest="en").text.lower())
-                except:
-                    return np.nan
-            except ValueError:
-                # unknown src language
+                    return re.sub(
+                        r"[^a-zA-Z]", "", self.translator.translate(text, dest="en", src=src_language).text.lower()
+                    )
+                except IndexError:
+                    try:
+                        return re.sub(r"[^a-zA-Z]", "", self.translator.translate(text, dest="en").text.lower())
+                    except:
+                        return np.nan
+                except ValueError:
+                    # unknown src language
+                    try:
+                        language_detected = self.translator.detect(text + " " + text).lang
+                        return re.sub(
+                            r"[^a-zA-Z]",
+                            "",
+                            self.translator.translate(text, dest="en", src=language_detected).text.lower(),
+                        )
+                    except:
+                        return np.nan
+                except AttributeError:
+                    # too many requests
+                    try:
+                        return re.sub(
+                            r"[^a-zA-Z]", "", self.translator.translate(text, dest="en", src=src_language).text.lower()
+                        )
+                    except:
+                        return self.translation_to_en(text, src_language)
+            else:
+                language_detected = self.translator.detect(text + " " + text).lang
                 try:
-                    language_detected = self.translator.detect(text + " " + text).lang
                     return re.sub(
                         r"[^a-zA-Z]",
                         "",
                         self.translator.translate(text, dest="en", src=language_detected).text.lower(),
                     )
+                except AttributeError:
+                    return self.translation_to_en(text, language_detected)
                 except:
                     return np.nan
-            except AttributeError:
-                # too many requests
-                try:
-                    return re.sub(
-                        r"[^a-zA-Z]", "", self.translator.translate(text, dest="en", src=src_language).text.lower()
-                    )
-                except:
-                    return self.translation_to_en(text, src_language)
         else:
             return np.nan
 

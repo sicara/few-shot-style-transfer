@@ -18,7 +18,6 @@ class ABOFormatting:
         self.metadata_df = pd.DataFrame()
         self.gathered_data_df = pd.DataFrame()
         self.translator = Translator()
-        self.exception_count = 0
 
     def read_metadata(self):
         metadata_dict = {
@@ -68,14 +67,12 @@ class ABOFormatting:
                 try:
                     return self.translator.translate(text, dest="en").text.lower()
                 except:
-                    self.exception_count += 1
                     return np.nan
             except ValueError:
                 # unknown src language
                 try:
                     return self.translator.translate(text, dest="en").text.lower()
                 except:
-                    self.exception_count += 1
                     return np.nan
             except AttributeError as ae:
                 # too many requests
@@ -85,7 +82,6 @@ class ABOFormatting:
                         text, dest="en", src=src_language
                     ).text.lower()
                 except:
-                    self.exception_count += 1
                     return np.nan
         else:
             return np.nan
@@ -109,7 +105,6 @@ class ABOFormatting:
         self.metadata_df["en_color"] = self.metadata_df["en_color"].replace(
             "multi", "multi-colored"
         )
-        print(self.exception_count)
 
     def map_metadata_to_images(self):
         images_metadata_df = pd.read_csv(

@@ -48,6 +48,16 @@ class ABOFormatting:
                     )
         self.metadata_df = pd.DataFrame.from_dict(metadata_dict, orient="columns")
 
+    def translation_from_unknown_language(self, text):
+        try:
+            language_detected = self.translator.detect(text + " " + text).lang
+            if language_detected != "en":
+                return self.translation_to_en(text, language_detected)
+            else:
+                return re.sub(r"[^a-zA-Z]", "", text.lower())
+        except:
+            return np.nan
+
     def translation_to_en(self, text, src_language):
         if len(text) > 1:
             if src_language != "en":
@@ -62,15 +72,7 @@ class ABOFormatting:
                         return np.nan
                 except ValueError:
                     # unknown src language
-                    try:
-                        language_detected = self.translator.detect(text + " " + text).lang
-                        return re.sub(
-                            r"[^a-zA-Z]",
-                            "",
-                            self.translator.translate(text, dest="en", src=language_detected).text.lower(),
-                        )
-                    except:
-                        return np.nan
+                    return self.translation_from_unknown_language(text)
                 except AttributeError:
                     # too many requests
                     try:
@@ -80,17 +82,7 @@ class ABOFormatting:
                     except:
                         return self.translation_to_en(text, src_language)
             else:
-                language_detected = self.translator.detect(text + " " + text).lang
-                try:
-                    return re.sub(
-                        r"[^a-zA-Z]",
-                        "",
-                        self.translator.translate(text, dest="en", src=language_detected).text.lower(),
-                    )
-                except AttributeError:
-                    return self.translation_to_en(text, language_detected)
-                except:
-                    return np.nan
+                return self.translation_from_unknown_language(text)
         else:
             return np.nan
 

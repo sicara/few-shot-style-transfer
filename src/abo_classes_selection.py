@@ -33,8 +33,23 @@ class ClassesSelection:
             .apply(lambda row: row["Class Name"].lower(), axis=1)
         )
 
+    def ask_for_user_input(self, abo_class, imagenet_class, information_sentence=""):
+        print(abo_class, "--", imagenet_class)
+        user_answer = input(information_sentence + "Is it a match (y/n)? ")
+        if user_answer.lower() == "y":
+            self.matched_classes.append(abo_class)
+        elif user_answer.lower() != "n":
+            self.ask_for_user_input(
+                abo_class, imagenet_class, information_sentence="Only 'y' and 'n' answers are allowed."
+            )
+
     def show_matches(self):
-        pass
+        for abo_class in self.abo_classes:
+            for imagenet_class in self.imagenet_classes:
+                if abo_class == imagenet_class:
+                    self.matched_classes.append(abo_class)
+                elif re.search(r"(?:^|\W)" + (str(abo_class)) + r"(?:$|\W)", str(imagenet_class)):
+                    self.ask_for_user_input(abo_class, imagenet_class)
 
     def write_selected_classes_to_json(self):
         pass

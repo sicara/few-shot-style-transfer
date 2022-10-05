@@ -52,6 +52,7 @@ class ClassesSelection:
             for imagenet_class in self.imagenet_classes:
                 if abo_class == imagenet_class:
                     self.matched_classes.append(abo_class)
+                    break
                 elif re.search(r"(?:^|\W)" + (str(abo_class)) + r"(?:$|\W)", str(imagenet_class)):
                     stop_bool = self.ask_for_user_input(abo_class, imagenet_class)
                     if stop_bool:

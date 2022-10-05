@@ -39,10 +39,13 @@ class ClassesSelection:
         user_answer = input(information_sentence + "Is it a match (y/n)? ")
         if user_answer.lower() == "y":
             self.matched_classes.append(abo_class)
+            return True
         elif user_answer.lower() != "n":
             self.ask_for_user_input(
                 abo_class, imagenet_class, information_sentence="Only 'y' and 'n' answers are allowed."
             )
+        else:
+            return False
 
     def get_matches_between_imagenet_and_abo(self):
         for abo_class in self.abo_classes:
@@ -50,7 +53,9 @@ class ClassesSelection:
                 if abo_class == imagenet_class:
                     self.matched_classes.append(abo_class)
                 elif re.search(r"(?:^|\W)" + (str(abo_class)) + r"(?:$|\W)", str(imagenet_class)):
-                    self.ask_for_user_input(abo_class, imagenet_class)
+                    continue_bool = self.ask_for_user_input(abo_class, imagenet_class)
+                    if continue_bool:
+                        break
 
     def write_selected_classes_to_json(self):
         selected_classes = list(set(self.abo_classes) - set(self.matched_classes))
@@ -62,9 +67,3 @@ class ClassesSelection:
         self.get_imagenet_classes()
         self.get_matches_between_imagenet_and_abo()
         self.write_selected_classes_to_json()
-
-
-ClassesSelection(
-    Path(ROOT_FOLDER / "src" / "datasets" / "gathered_abo_data.csv"),
-    Path(ROOT_FOLDER / "src" / "datasets" / "imagenet_classes.csv"),
-).selected_classes_to_json()

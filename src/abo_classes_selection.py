@@ -60,7 +60,7 @@ class ClassesSelection:
     def write_selected_classes_to_json(self):
         selected_classes = list(set(self.abo_classes) - set(self.matched_classes))
         with open(ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w") as f:
-            json.dump({"matched": self.matched_classes, "selected": selected_classes}, f)
+            json.dump({"matched": self.matched_classes, "selected": selected_classes, "manually_eliminated": []}, f)
 
     def selected_classes_to_json(self):
         self.get_consistent_abo_classes()

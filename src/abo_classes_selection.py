@@ -19,11 +19,19 @@ class ClassesSelection:
             .reset_index(name="count")
         )
         self.abo_classes = pd.DataFrame(
-            list(data[data["count"] >= 17].apply(lambda row: row.product_type.lower().replace("_", " "), axis=1))
+            list(data[data["count"] >= 17].apply(lambda row: row.product_type.lower().replace("_", " "), axis=1)),
+            columns=["abo_class"],
         )
 
     def get_imagenet_classes(self):
-        pass
+        self.imagenet_classes = pd.DataFrame(
+            list(
+                pd.read_csv(Path(ROOT_FOLDER / "src" / "datasets" / "imagenet_classes.csv"), sep="|").apply(
+                    lambda row: row["Class Name"].lower(), axis=1
+                )
+            ),
+            columns=["imagenet_class"],
+        )
 
     def show_matches(self):
         pass
@@ -38,4 +46,4 @@ class ClassesSelection:
         self.write_selected_classes_to_json()
 
 
-ClassesSelection(Path(ROOT_FOLDER / "src" / "datasets" / "gathered_abo_data.csv")).get_consistent_abo_classes()
+ClassesSelection(Path(ROOT_FOLDER / "src" / "datasets" / "gathered_abo_data.csv")).get_imagenet_classes()

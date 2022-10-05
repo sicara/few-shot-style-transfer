@@ -53,8 +53,8 @@ class ClassesSelection:
                 if abo_class == imagenet_class:
                     self.matched_classes.append(abo_class)
                 elif re.search(r"(?:^|\W)" + (str(abo_class)) + r"(?:$|\W)", str(imagenet_class)):
-                    continue_bool = self.ask_for_user_input(abo_class, imagenet_class)
-                    if continue_bool:
+                    stop_bool = self.ask_for_user_input(abo_class, imagenet_class)
+                    if stop_bool:
                         break
 
     def write_selected_classes_to_json(self):

@@ -2,6 +2,7 @@ from typing import Union
 from pathlib import Path
 import pandas as pd
 import re
+import json
 
 from src.config import ROOT_FOLDER
 
@@ -43,7 +44,7 @@ class ClassesSelection:
                 abo_class, imagenet_class, information_sentence="Only 'y' and 'n' answers are allowed."
             )
 
-    def show_matches(self):
+    def get_matches_between_imagenet_and_abo(self):
         for abo_class in self.abo_classes:
             for imagenet_class in self.imagenet_classes:
                 if abo_class == imagenet_class:
@@ -52,12 +53,14 @@ class ClassesSelection:
                     self.ask_for_user_input(abo_class, imagenet_class)
 
     def write_selected_classes_to_json(self):
-        pass
+        selected_classes = list(set(self.abo_classes) - set(self.matched_classes))
+        with open(ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w") as f:
+            json.dump({"matched": self.matched_classes, "selected": selected_classes}, f)
 
     def selected_classes_to_json(self):
         self.get_consistent_abo_classes()
         self.get_imagenet_classes()
-        self.show_matches()
+        self.get_matches_between_imagenet_and_abo()
         self.write_selected_classes_to_json()
 
 

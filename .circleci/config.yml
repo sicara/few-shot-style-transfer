@@ -1,0 +1,62 @@
+version: 2.1
+jobs:
+  install:
+    parameters:
+      python-version:
+        type: string
+    working_directory: ~/project
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    steps:
+      - run:
+          name: Set python << parameters.python-version >>
+          command: |
+            pyenv versions
+            pyenv global << parameters.python-version >>
+            python -m pip install --upgrade pip setuptools wheel
+      - checkout
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - docker-<< parameters.python-version >>-{{ checksum "requirements.txt" }}
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip
+            pip install -r requirements.txt
+      - save_cache:
+          paths:
+            - ./venv
+          key: docker-<< parameters.python-version >>-{{ checksum "requirements.txt" }}
+  test:
+    parameters:
+      python-version:
+        type: string
+    working_directory: ~/project
+    docker:
+      - image: cimg/python:<< parameters.python-version >>
+    steps:
+      - run:
+          name: Set python << parameters.python-version >>
+          command: |
+            pyenv global << parameters.python-version >>
+            python -m pip install --upgrade pip setuptools wheel
+      - checkout
+      - restore_cache:
+          key: docker-<< parameters.python-version >>-{{ checksum "requirements.txt" }}
+      - run:
+          name: run pytest
+          command: |
+            . venv/bin/activate
+            make test
+workflows:
+  main:
+    jobs:
+      - install:
+          python-version: "3.8.10"
+      - test:
+          python-version: "3.8.10"
+          requires:
+            - install

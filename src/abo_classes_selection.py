@@ -26,12 +26,16 @@ class ClassesSelection:
             .count()
             .reset_index(name="count")
         )
-        self.abo_classes = list(abo_class_df[abo_class_df["count"] >= 17]["product_type"])
+        self.abo_classes = list(
+            abo_class_df[abo_class_df["count"] >= 17]["product_type"]
+        )
 
     def get_imagenet_classes(self):
         imagenet_class_df = pd.read_csv(self.path_to_imagenet_csv, sep="|")
         self.imagenet_classes = list(
-            imagenet_class_df.assign(**{"Class Name": imagenet_class_df["Class Name"].str.split(",")})
+            imagenet_class_df.assign(
+                **{"Class Name": imagenet_class_df["Class Name"].str.split(",")}
+            )
             .explode("Class Name")
             .apply(lambda row: row["Class Name"].lower(), axis=1)
         )
@@ -63,7 +67,9 @@ class ClassesSelection:
                     self.matched_classes.append(abo_class)
                     break
                 elif re.search(
-                    r"(?:^|\W)" + (str(abo_class).lower().replace("_", " ")) + r"(?:$|\W)",
+                    r"(?:^|\W)"
+                    + (str(abo_class).lower().replace("_", " "))
+                    + r"(?:$|\W)",
                     str(imagenet_class),
                 ):
                     stop_bool = self.ask_for_user_input(abo_class, imagenet_class)
@@ -72,7 +78,9 @@ class ClassesSelection:
 
     def write_selected_classes_to_json(self):
         selected_classes = list(set(self.abo_classes) - set(self.matched_classes))
-        with open(ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w") as f:
+        with open(
+            ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w"
+        ) as f:
             json.dump(
                 {
                     "matched": self.matched_classes,

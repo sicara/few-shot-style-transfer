@@ -1,8 +1,8 @@
 #%%
-from src.config import ROOT_FOLDER
 import pandas as pd
 import json
 from matplotlib import pyplot as plt
+from src.config import ROOT_FOLDER
 
 abo_data_df = pd.read_csv(ROOT_FOLDER / "data/gathered_abo_data.csv")
 abo_data_df["en_color"] = abo_data_df["en_color"].astype(str)

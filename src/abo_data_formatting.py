@@ -26,25 +26,34 @@ class ABOFormatting:
             "color": [],
             "language": [],
         }
-        json_files = list((self.path_to_abo_dataset_folder / "listings" / "metadata").iterdir())
+        json_files = list(
+            (self.path_to_abo_dataset_folder / "listings" / "metadata").iterdir()
+        )
         for json_file in tqdm(json_files, desc="Metadata collection"):
             with gzip.open(f"{json_file}", "r") as f:
                 data = [json.loads(line) for line in f]
             for product in data:
                 if "main_image_id" in product:
                     metadata_dict["main_image_id"].append(product["main_image_id"])
-                    metadata_dict["product_type"].append(product["product_type"][0]["value"])
+                    metadata_dict["product_type"].append(
+                        product["product_type"][0]["value"]
+                    )
                     metadata_dict["color"].append(
                         re.sub(
                             r"[^a-zA-Z]",
                             "",
                             product["color"][0]["standardized_values"][0],
                         )
-                        if ("color" in product and "standardized_values" in product["color"][0])
+                        if (
+                            "color" in product
+                            and "standardized_values" in product["color"][0]
+                        )
                         else np.nan
                     )
                     metadata_dict["language"].append(
-                        product["color"][0]["language_tag"][:2] if ("color" in product) else np.nan
+                        product["color"][0]["language_tag"][:2]
+                        if ("color" in product)
+                        else np.nan
                     )
         self.metadata_df = pd.DataFrame.from_dict(metadata_dict, orient="columns")
 
@@ -65,7 +74,9 @@ class ABOFormatting:
                     return re.sub(
                         r"[^a-zA-Z]",
                         "",
-                        self.translator.translate(text, dest="en", src=src_language).text.lower(),
+                        self.translator.translate(
+                            text, dest="en", src=src_language
+                        ).text.lower(),
                     )
                 except IndexError:
                     try:
@@ -85,7 +96,9 @@ class ABOFormatting:
                         return re.sub(
                             r"[^a-zA-Z]",
                             "",
-                            self.translator.translate(text, dest="en", src=src_language).text.lower(),
+                            self.translator.translate(
+                                text, dest="en", src=src_language
+                            ).text.lower(),
                         )
                     except:
                         return self.translation_to_en(text, src_language)
@@ -110,7 +123,9 @@ class ABOFormatting:
                 )
             )
         )
-        self.metadata_df = pd.merge(self.metadata_df, color_grouped_df, on=["color"], how="left")
+        self.metadata_df = pd.merge(
+            self.metadata_df, color_grouped_df, on=["color"], how="left"
+        )
         self.metadata_df["en_color"] = self.metadata_df["en_color"].replace(
             {
                 "gray": "grey",
@@ -141,4 +156,6 @@ class ABOFormatting:
         self.read_metadata()
         self.uniformize_color_names()
         self.map_metadata_to_images()
-        self.gathered_data_df.to_csv(ROOT_FOLDER / "src/datasets/gathered_abo_data_color.csv", index=False)
+        self.gathered_data_df.to_csv(
+            ROOT_FOLDER / "data/gathered_abo_data_color.csv", index=False
+        )

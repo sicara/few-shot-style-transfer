@@ -14,10 +14,7 @@ class ABO(FewShotDataset):
     def __init__(
         self,
         root: Union[Path, str],
-        specs_file: Union[Path, str] = ROOT_FOLDER
-        / "src"
-        / "datasets"
-        / "gathered_abo_data.csv",
+        specs_file: Union[Path, str] = ROOT_FOLDER / "data" / "gathered_abo_data.csv",
         image_size: int = 84,
         transform: Callable = None,
         training: bool = False,

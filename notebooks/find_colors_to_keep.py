@@ -4,7 +4,7 @@ import pandas as pd
 import json
 from matplotlib import pyplot as plt
 
-abo_data_df = pd.read_csv(ROOT_FOLDER / "src/datasets/gathered_abo_data.csv")
+abo_data_df = pd.read_csv(ROOT_FOLDER / "data/gathered_abo_data.csv")
 abo_data_df["en_color"] = abo_data_df["en_color"].astype(str)
 #%%
 color_count_df = pd.DataFrame(
@@ -23,9 +23,9 @@ color_count_df[color_count_df["count"] > threshold].plot.bar(
 )
 plt.show()
 # %%
-with open(ROOT_FOLDER / "src/selected_and_removed_colors.json") as json_file:
+with open(ROOT_FOLDER / "data/selected_and_removed_colors.json") as json_file:
     selected_colors = json.load(json_file)["selected"]
-with open(ROOT_FOLDER / "src/selected_and_matched_abo_classes.json") as json_file:
+with open(ROOT_FOLDER / "data/selected_and_matched_abo_classes.json") as json_file:
     selected_classes = json.load(json_file)["selected"]
 # %%
 final_abo_data = abo_data_df[

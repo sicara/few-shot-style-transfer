@@ -26,18 +26,12 @@ class ClassesSelection:
             .count()
             .reset_index(name="count")
         )
-        self.abo_classes = list(
-            abo_class_df[abo_class_df["count"] >= 17].apply(
-                lambda row: row.product_type.lower().replace("_", " "), axis=1
-            )
-        )
+        self.abo_classes = list(abo_class_df[abo_class_df["count"] >= 17]["product_type"])
 
     def get_imagenet_classes(self):
         imagenet_class_df = pd.read_csv(self.path_to_imagenet_csv, sep="|")
         self.imagenet_classes = list(
-            imagenet_class_df.assign(
-                **{"Class Name": imagenet_class_df["Class Name"].str.split(",")}
-            )
+            imagenet_class_df.assign(**{"Class Name": imagenet_class_df["Class Name"].str.split(",")})
             .explode("Class Name")
             .apply(lambda row: row["Class Name"].lower(), axis=1)
         )
@@ -58,13 +52,19 @@ class ClassesSelection:
             return False
 
     def get_matches_between_imagenet_and_abo(self):
+        """
+        Classes are matched based on:
+        - equality of strings (ex: 'sleep bag' is equal to 'sleep bag' not to 'bag') or
+        - matching of words not subset of words (ex: 'bag' is matched with 'sleep bag' but not with 'bagger')
+        """
         for abo_class in self.abo_classes:
             for imagenet_class in self.imagenet_classes:
-                if abo_class == imagenet_class:
+                if str(abo_class).lower().replace("_", " ") == str(imagenet_class):
                     self.matched_classes.append(abo_class)
                     break
                 elif re.search(
-                    r"(?:^|\W)" + (str(abo_class)) + r"(?:$|\W)", str(imagenet_class)
+                    r"(?:^|\W)" + (str(abo_class).lower().replace("_", " ")) + r"(?:$|\W)",
+                    str(imagenet_class),
                 ):
                     stop_bool = self.ask_for_user_input(abo_class, imagenet_class)
                     if stop_bool:
@@ -72,9 +72,7 @@ class ClassesSelection:
 
     def write_selected_classes_to_json(self):
         selected_classes = list(set(self.abo_classes) - set(self.matched_classes))
-        with open(
-            ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w"
-        ) as f:
+        with open(ROOT_FOLDER / "src/selected_and_matched_abo_classes_new.json", "w") as f:
             json.dump(
                 {
                     "matched": self.matched_classes,

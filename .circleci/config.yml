@@ -55,10 +55,8 @@ workflows:
   main:
     jobs:
       - install:
-          parameters:
-            python-version: "3.8.10"
+          python-version: "3.8.10"
       - test:
-          parameters:
-            python-version: "3.8.10"
+          python-version: "3.8.10"
           requires:
             - install

@@ -127,7 +127,15 @@ class ABOFormatting:
             self.metadata_df, color_grouped_df, on=["color"], how="left"
         )
         self.metadata_df["en_color"] = self.metadata_df["en_color"].replace(
-            {"gray": "grey", "multi": "multi-colored"}
+            {
+                "gray": "grey",
+                "multi": "multicolored",
+                "multicolor": "multicolored",
+                "multicolour": "multicolored",
+                "multicoloured": "multicolored",
+                "multicolourated": "multicolored",
+                "goldroeseilver": "goldrosesilver",
+            }
         )
 
     def map_metadata_to_images(self):
@@ -149,5 +157,5 @@ class ABOFormatting:
         self.uniformize_color_names()
         self.map_metadata_to_images()
         self.gathered_data_df.to_csv(
-            ROOT_FOLDER / "src/datasets/gathered_abo_data_color.csv", index=False
+            ROOT_FOLDER / "data/gathered_abo_data_color.csv", index=False
         )

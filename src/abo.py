@@ -23,7 +23,7 @@ class ABO(FewShotDataset):
         training: bool = False,
         classes_json: Optional[Path] = None,
         colors_json: Optional[Path] = None,
-        threshold: int = 17,
+        min_number_item_per_class: int = 17,
     ):
         """
         Args:
@@ -39,18 +39,17 @@ class ABO(FewShotDataset):
             colors_json: path to the json file containing the selected colors. If no path is given, all the colors are used.
         """
         self.root = ROOT_FOLDER / root
-        self.data = self.load_specs(specs_file, classes_json, colors_json, threshold)
+        self.data = self.load_specs(specs_file, classes_json, colors_json, min_number_item_per_class)
         self.class_names = list(self.data["product_type"].unique())
-        self.transform = (
-            transform if transform else default_transform(image_size, training=training)
-        )
+        self.transform = transform if transform else default_transform(image_size, training=training)
+        self.min_number_of_item_per_class = min_number_item_per_class
 
     @staticmethod
     def load_specs(
         specs_file: Union[Path, str],
         classes_json: Optional[Path],
         colors_json: Optional[Path],
-        threshold: int,
+        min_number_item_per_class: int,
     ) -> DataFrame:
         data = pd.read_csv(specs_file)
         if colors_json is not None:
@@ -66,17 +65,13 @@ class ABO(FewShotDataset):
             }
         )
         class_names = list(
-            data_product_type_count[data_product_type_count["count"] >= threshold][
-                "product_type"
-            ]
+            data_product_type_count[data_product_type_count["count"] >= min_number_item_per_class]["product_type"]
         )
         removed_classes = list(
-            data_product_type_count[data_product_type_count["count"] < threshold][
-                "product_type"
-            ]
+            data_product_type_count[data_product_type_count["count"] < min_number_item_per_class]["product_type"]
         )
         logger.info(
-            f"Removed classes {removed_classes} because they had less than {str(threshold)} elements."
+            f"Removed classes {removed_classes} because they had less than {str(min_number_item_per_class)} elements."
         )
         data = data[data.product_type.isin(class_names)].reset_index()
 
@@ -85,9 +80,7 @@ class ABO(FewShotDataset):
         return data.assign(label=lambda df: df["product_type"].map(label_mapping))
 
     def __getitem__(self, item: int) -> Tuple[Tensor, int]:
-        img = self.transform(
-            Image.open(self.root / self.data.path[item]).convert("RGB")
-        )
+        img = self.transform(Image.open(self.root / self.data.path[item]).convert("RGB"))
         label = self.data.label[item]
 
         return img, label

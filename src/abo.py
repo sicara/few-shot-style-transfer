@@ -39,7 +39,9 @@ class ABO(FewShotDataset):
         self.root = ROOT_FOLDER / root
         self.data = self.load_specs(specs_file, classes_json, colors_json)
         self.class_names = list(self.data["product_type"].unique())
-        self.transform = transform if transform else default_transform(image_size, training=training)
+        self.transform = (
+            transform if transform else default_transform(image_size, training=training)
+        )
 
     @staticmethod
     def load_specs(
@@ -60,7 +62,11 @@ class ABO(FewShotDataset):
                 "count": data["product_type"].value_counts().values,
             }
         )
-        class_names = list(data_product_type_count[data_product_type_count["count"] > 16]["product_type"])
+        class_names = list(
+            data_product_type_count[data_product_type_count["count"] > 16][
+                "product_type"
+            ]
+        )
         data = data[data.product_type.isin(class_names)].reset_index()
 
         label_mapping = {name: class_names.index(name) for name in class_names}
@@ -68,7 +74,9 @@ class ABO(FewShotDataset):
         return data.assign(label=lambda df: df["product_type"].map(label_mapping))
 
     def __getitem__(self, item: int) -> Tuple[Tensor, int]:
-        img = self.transform(Image.open(self.root / self.data.path[item]).convert("RGB"))
+        img = self.transform(
+            Image.open(self.root / self.data.path[item]).convert("RGB")
+        )
         label = self.data.label[item]
 
         return img, label

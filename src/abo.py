@@ -6,6 +6,7 @@ from pandas import DataFrame
 from torch import Tensor
 from PIL import Image
 import json
+from loguru import logger
 
 from easyfsl.datasets import FewShotDataset
 from easyfsl.datasets.default_configs import default_transform
@@ -22,6 +23,7 @@ class ABO(FewShotDataset):
         training: bool = False,
         classes_json: Optional[Path] = None,
         colors_json: Optional[Path] = None,
+        threshold: int = 17,
     ):
         """
         Args:
@@ -37,7 +39,7 @@ class ABO(FewShotDataset):
             colors_json: path to the json file containing the selected colors. If no path is given, all the colors are used.
         """
         self.root = ROOT_FOLDER / root
-        self.data = self.load_specs(specs_file, classes_json, colors_json)
+        self.data = self.load_specs(specs_file, classes_json, colors_json, threshold)
         self.class_names = list(self.data["product_type"].unique())
         self.transform = (
             transform if transform else default_transform(image_size, training=training)
@@ -48,6 +50,7 @@ class ABO(FewShotDataset):
         specs_file: Union[Path, str],
         classes_json: Optional[Path],
         colors_json: Optional[Path],
+        threshold: int,
     ) -> DataFrame:
         data = pd.read_csv(specs_file)
         if colors_json is not None:
@@ -63,9 +66,17 @@ class ABO(FewShotDataset):
             }
         )
         class_names = list(
-            data_product_type_count[data_product_type_count["count"] > 16][
+            data_product_type_count[data_product_type_count["count"] >= threshold][
                 "product_type"
             ]
+        )
+        removed_classes = list(
+            data_product_type_count[data_product_type_count["count"] < threshold][
+                "product_type"
+            ]
+        )
+        logger.info(
+            f"Removed classes {removed_classes} because they had less than {str(threshold)} elements."
         )
         data = data[data.product_type.isin(class_names)].reset_index()
 

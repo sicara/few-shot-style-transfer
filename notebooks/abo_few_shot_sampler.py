@@ -7,7 +7,7 @@ from easyfsl.utils import plot_images
 from torch.utils.data import DataLoader
 
 #%%
-root = Path("abo_dataset/images/small")
+root = Path("data/abo_dataset/images/small")
 image_size = 112
 
 dataset = ABO(
@@ -19,6 +19,8 @@ dataset = ABO(
             transforms.ToTensor(),
         ]
     ),
+    classes_json=Path("data/selected_and_matched_abo_classes.json"),
+    colors_json=Path("data/selected_and_removed_colors.json"),
 )
 #%%
 N_WAY = 5  # Number of classes in a task
@@ -46,3 +48,5 @@ test_loader = DataLoader(
 
 plot_images(example_support_images, "support images", images_per_row=N_SHOT)
 plot_images(example_query_images, "query images", images_per_row=N_QUERY)
+
+# %%

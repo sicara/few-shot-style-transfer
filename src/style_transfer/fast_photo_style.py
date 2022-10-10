@@ -27,8 +27,16 @@ class FastPhotoStyle:
             p_wct.cuda(0)
         return p_wct
 
-    def photo_style_transfer(self, content_photo_path: Union[str, Path], style_photo_path: Union[str, Path]):
-        process_stylization.stylization(
+    def photo_style_transfer(
+        self, content_photo_path: Union[str, Path], style_photo_path: Union[str, Path], save_not_return: bool = True
+    ):
+        """
+        Args:
+            content_photo_path (Union[str, Path]): path to the photo with content
+            style_photo_path (Union[str, Path]): path to the photo with style
+            save_not_return (bool, optional): if True the method saves the output image, if False the method returns the image as a PIL Image. Defaults to True.
+        """
+        img = process_stylization.stylization(
             stylization_module=self.photo_wct_model,
             smoothing_module=self.photo_propagator,
             content_image_path=ROOT_FOLDER / self.root / "examples" / Path(content_photo_path),
@@ -44,4 +52,7 @@ class FastPhotoStyle:
             cuda=1,
             save_intermediate=False,
             no_post=False,
+            save_not_return=save_not_return,
         )
+        if img is not None:
+            return img

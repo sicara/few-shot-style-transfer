@@ -60,6 +60,7 @@ def stylization(
     no_post,
     cont_seg_remapping=None,
     styl_seg_remapping=None,
+    save_not_return=True,
 ):
     # Load image
     with torch.no_grad():
@@ -135,4 +136,7 @@ def stylization(
             if no_post is False:
                 with Timer("Elapsed time in post processing: %f"):
                     out_img = smooth_filter(out_img, cont_pilimg, f_radius=15, f_edge=1e-1)
-            out_img.save(output_image_path)
+            if save_not_return:
+                out_img.save(output_image_path)
+            if not save_not_return:
+                return out_img

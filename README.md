@@ -31,7 +31,5 @@ We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-obje
     ```
 
 ## References
-[1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu,
-Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen,
-Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset
-and benchmarks for real-world 3d object understanding. CVPR, 2022.
+[1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu, Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen, Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset and benchmarks for real-world 3d object understanding. CVPR, 2022.
+[2] Yijun Li, Ming-Yu Liu, Xueting Li, Ming-Hsuan Yang, Jan Kautz. A Closed-form Solution to Photorealistic Image Stylization. CoRR, 2018.

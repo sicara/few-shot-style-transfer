@@ -6,3 +6,4 @@ googletrans>=4.0.0-rc1
 tqdm>=4.64.1
 pytest>=7.1.3
 loguru>=0.6.0
+pynvrtc>=9.2

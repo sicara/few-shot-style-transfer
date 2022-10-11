@@ -25,13 +25,18 @@ class FastPhotoStyle:
 
     def load_model_wct(self, cuda_presence):
         p_wct = PhotoWCT()
-        p_wct.load_state_dict(torch.load(ROOT_FOLDER / self.root / "utils/photo_wct.pth"))
+        p_wct.load_state_dict(
+            torch.load(ROOT_FOLDER / self.root / "utils/photo_wct.pth")
+        )
         if cuda_presence:
             p_wct.cuda(0)
         return p_wct
 
     def photo_style_transfer(
-        self, content_photo: torch.Tensor, style_photo: torch.Tensor, save_not_return: bool = True
+        self,
+        content_photo: torch.Tensor,
+        style_photo: torch.Tensor,
+        save_not_return: bool = True,
     ):
         """
         Args:
@@ -55,7 +60,9 @@ class FastPhotoStyle:
         if img is not None:
             return img
 
-    def augment_support_set(self, support_images: torch.Tensor, support_labels: torch.Tensor):
+    def augment_support_set(
+        self, support_images: torch.Tensor, support_labels: torch.Tensor
+    ):
         """
         Args:
             support_images (torch.Tensor): tensor containing the images of one task
@@ -81,13 +88,21 @@ class FastPhotoStyle:
                         )
                     )[None, :]
                     new_img = F.interpolate(
-                        new_img, size=(augmented_support_images.shape[-1], augmented_support_images.shape[-1])
+                        new_img,
+                        size=(
+                            augmented_support_images.shape[-1],
+                            augmented_support_images.shape[-1],
+                        ),
                     )
                     augmented_support_images = torch.cat(
                         (augmented_support_images, new_img),
                         0,
                     )
                     augmented_support_labels = torch.cat(
-                        (augmented_support_labels, torch.tensor([augmented_support_labels[content_img_id]])), -1
+                        (
+                            augmented_support_labels,
+                            torch.tensor([augmented_support_labels[content_img_id]]),
+                        ),
+                        -1,
                     )
         return augmented_support_images, augmented_support_labels

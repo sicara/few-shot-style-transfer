@@ -36,14 +36,26 @@ def memory_limit_image_resize(cont_img):
     orig_height = cont_img.height
     if max(cont_img.width, cont_img.height) < MINSIZE:
         if cont_img.width > cont_img.height:
-            cont_img.thumbnail((int(cont_img.width * 1.0 / cont_img.height * MINSIZE), MINSIZE), Image.BICUBIC)
+            cont_img.thumbnail(
+                (int(cont_img.width * 1.0 / cont_img.height * MINSIZE), MINSIZE),
+                Image.BICUBIC,
+            )
         else:
-            cont_img.thumbnail((MINSIZE, int(cont_img.height * 1.0 / cont_img.width * MINSIZE)), Image.BICUBIC)
+            cont_img.thumbnail(
+                (MINSIZE, int(cont_img.height * 1.0 / cont_img.width * MINSIZE)),
+                Image.BICUBIC,
+            )
     if min(cont_img.width, cont_img.height) > MAXSIZE:
         if cont_img.width > cont_img.height:
-            cont_img.thumbnail((MAXSIZE, int(cont_img.height * 1.0 / cont_img.width * MAXSIZE)), Image.BICUBIC)
+            cont_img.thumbnail(
+                (MAXSIZE, int(cont_img.height * 1.0 / cont_img.width * MAXSIZE)),
+                Image.BICUBIC,
+            )
         else:
-            cont_img.thumbnail(((int(cont_img.width * 1.0 / cont_img.height * MAXSIZE), MAXSIZE)), Image.BICUBIC)
+            cont_img.thumbnail(
+                ((int(cont_img.width * 1.0 / cont_img.height * MAXSIZE), MAXSIZE)),
+                Image.BICUBIC,
+            )
     # print("Resize image: (%d,%d)->(%d,%d)" % (orig_width, orig_height, cont_img.width, cont_img.height))
     return cont_img.width, cont_img.height
 
@@ -105,18 +117,26 @@ def stylization(
 
         if save_intermediate:
             with Timer("Elapsed time in stylization: %f"):
-                stylized_img = stylization_module.transform(cont_img, styl_img, cont_seg, styl_seg)
+                stylized_img = stylization_module.transform(
+                    cont_img, styl_img, cont_seg, styl_seg
+                )
             if ch != new_ch or cw != new_cw:
                 print("De-resize image: (%d,%d)->(%d,%d)" % (new_cw, new_ch, cw, ch))
-                stylized_img = nn.functional.upsample(stylized_img, size=(ch, cw), mode="bilinear")
-            utils.save_image(stylized_img.data.cpu().float(), output_image_path, nrow=1, padding=0)
+                stylized_img = nn.functional.upsample(
+                    stylized_img, size=(ch, cw), mode="bilinear"
+                )
+            utils.save_image(
+                stylized_img.data.cpu().float(), output_image_path, nrow=1, padding=0
+            )
 
             with Timer("Elapsed time in propagation: %f"):
                 out_img = smoothing_module.process(output_image_path, content_image)
             out_img.save(output_image_path)
 
             if not cuda:
-                print("NotImplemented: The CPU version of smooth filter has not been implemented currently.")
+                print(
+                    "NotImplemented: The CPU version of smooth filter has not been implemented currently."
+                )
                 return
 
             if no_post is False:
@@ -130,10 +150,14 @@ def stylization(
             out_img.save(output_image_path)
         else:
             with Timer("Elapsed time in stylization: %f"):
-                stylized_img = stylization_module.transform(cont_img, styl_img, cont_seg, styl_seg)
+                stylized_img = stylization_module.transform(
+                    cont_img, styl_img, cont_seg, styl_seg
+                )
             if ch != new_ch or cw != new_cw:
                 print("De-resize image: (%d,%d)->(%d,%d)" % (new_cw, new_ch, cw, ch))
-                stylized_img = nn.functional.upsample(stylized_img, size=(ch, cw), mode="bilinear")
+                stylized_img = nn.functional.upsample(
+                    stylized_img, size=(ch, cw), mode="bilinear"
+                )
             grid = utils.make_grid(stylized_img.data, nrow=1, padding=0)
             ndarr = grid.mul(255).clamp(0, 255).byte().permute(1, 2, 0).cpu().numpy()
             out_img = Image.fromarray(ndarr)
@@ -143,7 +167,9 @@ def stylization(
 
             if no_post is False:
                 with Timer("Elapsed time in post processing: %f"):
-                    out_img = smooth_filter(out_img, cont_pilimg, f_radius=15, f_edge=1e-1)
+                    out_img = smooth_filter(
+                        out_img, cont_pilimg, f_radius=15, f_edge=1e-1
+                    )
             if save_not_return:
                 out_img.save(output_image_path)
             if not save_not_return:

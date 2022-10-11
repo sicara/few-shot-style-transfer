@@ -28,7 +28,12 @@ class PrototypicalNetworks(nn.Module):
         # Infer the number of different classes from the labels of the support set
         n_way = len(torch.unique(support_labels))
         # Prototype i is the mean of all instances of features corresponding to labels == i
-        z_proto = torch.cat([z_support[torch.nonzero(support_labels == label)].mean(0) for label in range(n_way)])
+        z_proto = torch.cat(
+            [
+                z_support[torch.nonzero(support_labels == label)].mean(0)
+                for label in range(n_way)
+            ]
+        )
 
         # Compute the euclidean distance from queries to prototypes
         dists = torch.cdist(z_query, z_proto)
@@ -60,13 +65,19 @@ class FewShotClassifier:
         """
         return (
             torch.max(
-                self.few_shot_model(support_images.cuda(), support_labels.cuda(), query_images.cuda()).detach().data,
+                self.few_shot_model(
+                    support_images.cuda(), support_labels.cuda(), query_images.cuda()
+                )
+                .detach()
+                .data,
                 1,
             )[1]
             == query_labels.cuda()
         ).sum().item(), len(query_labels)
 
-    def evaluate(self, data_loader: DataLoader, style_transfer_augmentation: bool = False):
+    def evaluate(
+        self, data_loader: DataLoader, style_transfer_augmentation: bool = False
+    ):
         # We'll count everything and compute the ratio at the end
         total_predictions = 0
         correct_predictions = 0
@@ -86,7 +97,9 @@ class FewShotClassifier:
                     support_images, support_labels = FastPhotoStyle(
                         ROOT_FOLDER / "src/style_transfer"
                     ).augment_support_set(support_images, support_labels)
-                correct, total = self.evaluate_on_one_task(support_images, support_labels, query_images, query_labels)
+                correct, total = self.evaluate_on_one_task(
+                    support_images, support_labels, query_images, query_labels
+                )
 
                 total_predictions += total
                 correct_predictions += correct

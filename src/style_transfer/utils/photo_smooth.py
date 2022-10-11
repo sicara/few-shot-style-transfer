@@ -38,7 +38,11 @@ class Propagator(nn.Module):
         h1, w1, k = B.shape
         h = h1 - 4
         w = w1 - 4
-        B = B[int((h1 - h) / 2) : int((h1 - h) / 2 + h), int((w1 - w) / 2) : int((w1 - w) / 2 + w), :]
+        B = B[
+            int((h1 - h) / 2) : int((h1 - h) / 2 + h),
+            int((w1 - w) / 2) : int((w1 - w) / 2 + w),
+            :,
+        ]
         content = np.array(content.resize((h, w)))
         B = self.__replication_padding(B, 2)
         content = self.__replication_padding(content, 2)
@@ -49,7 +53,9 @@ class Propagator(nn.Module):
         dd = W.sum(0)
         dd = np.sqrt(np.power(dd, -1))
         dd = np.asarray(dd).squeeze()
-        D = scipy.sparse.csc_matrix((dd, (np.arange(0, w1 * h1), np.arange(0, w1 * h1))))  # 0.026
+        D = scipy.sparse.csc_matrix(
+            (dd, (np.arange(0, w1 * h1), np.arange(0, w1 * h1)))
+        )  # 0.026
         S = D.dot(W).dot(D)
         A = scipy.sparse.identity(w1 * h1) - self.beta * S
         A = A.tocsc()
@@ -89,7 +95,9 @@ class Propagator(nn.Module):
         nz_indsCol = np.tile(win_inds, win_size).ravel()
         nz_indsRow = np.repeat(win_inds, win_size).ravel()
         nz_indsVal = vals.ravel()
-        L = scipy.sparse.coo_matrix((nz_indsVal, (nz_indsRow, nz_indsCol)), shape=(h * w, h * w))
+        L = scipy.sparse.coo_matrix(
+            (nz_indsVal, (nz_indsRow, nz_indsCol)), shape=(h * w, h * w)
+        )
         return L
 
     def __replication_padding(self, arr, pad):

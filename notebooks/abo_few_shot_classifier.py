@@ -1,10 +1,13 @@
 #%%
 from src.abo import ABO
+from src.config import ROOT_FOLDER
+from src.style_transfer.fast_photo_style import FastPhotoStyle
+from src.few_shot_classifier import FewShotClassifier
 from pathlib import Path
 from torchvision import transforms
+from torch.utils.data import DataLoader
 from easyfsl.samplers import TaskSampler
 from easyfsl.utils import plot_images
-from torch.utils.data import DataLoader
 
 #%%
 root = Path("data/abo_dataset/images/small")
@@ -37,7 +40,7 @@ test_loader = DataLoader(
     pin_memory=True,
     collate_fn=test_sampler.episodic_collate_fn,
 )
-
+#%%
 (
     example_support_images,
     example_support_labels,
@@ -45,8 +48,18 @@ test_loader = DataLoader(
     example_query_labels,
     example_class_ids,
 ) = next(iter(test_loader))
-
 plot_images(example_support_images, "support images", images_per_row=N_SHOT)
 plot_images(example_query_images, "query images", images_per_row=N_QUERY)
+
+# %%
+augmented_support_images, augmented_support_labels = FastPhotoStyle(
+    ROOT_FOLDER / "src/style_transfer"
+).augment_support_set(example_support_images, example_support_labels)
+# %%
+plot_images(augmented_support_images, "support images", images_per_row=N_SHOT * N_WAY)
+plot_images(example_query_images, "query images", images_per_row=N_QUERY)
+#%%
+model = FewShotClassifier()
+model.evaluate(test_loader, style_transfer_augmentation=False)
 
 # %%

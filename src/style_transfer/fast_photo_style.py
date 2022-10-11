@@ -3,6 +3,8 @@ from src.config import ROOT_FOLDER
 from pathlib import Path
 from typing import Union
 import torch
+from tqdm import tqdm
+import torchvision.transforms as transforms
 
 from src.style_transfer.utils.photo_wct import PhotoWCT
 from src.style_transfer.utils.photo_smooth import Propagator
@@ -28,27 +30,22 @@ class FastPhotoStyle:
         return p_wct
 
     def photo_style_transfer(
-        self, content_photo_path: Union[str, Path], style_photo_path: Union[str, Path], save_not_return: bool = True
+        self, content_photo: torch.Tensor, style_photo: torch.Tensor, save_not_return: bool = True
     ):
         """
         Args:
-            content_photo_path (Union[str, Path]): path to the photo with content
-            style_photo_path (Union[str, Path]): path to the photo with style
+            content_photo (torch.Tensor): tensor representing the photo with content
+            style_photo (torch.Tensor): tensor representing the photo with style
             save_not_return (bool, optional): if True the method saves the output image, if False the method returns the image as a PIL Image. Defaults to True.
         """
         img = process_stylization.stylization(
             stylization_module=self.photo_wct_model,
             smoothing_module=self.photo_propagator,
-            content_image_path=ROOT_FOLDER / self.root / "examples" / Path(content_photo_path),
-            style_image_path=ROOT_FOLDER / self.root / "examples" / Path(style_photo_path),
+            content_image=transforms.ToPILImage()(content_photo).convert("RGB"),
+            style_image=transforms.ToPILImage()(style_photo).convert("RGB"),
             content_seg_path=[],
             style_seg_path=[],
-            output_image_path=ROOT_FOLDER
-            / self.root
-            / "examples"
-            / Path(
-                str(content_photo_path)[:-4] + "-" + str(style_photo_path)
-            ),  # f2/f2ee3bf8.jpg and 62/62bc0963.jpg give f2/f2ee3bf8-62/62bc0963.jpg
+            output_image_path=ROOT_FOLDER / self.root / "examples" / "example1.png",
             cuda=1,
             save_intermediate=False,
             no_post=False,
@@ -56,3 +53,40 @@ class FastPhotoStyle:
         )
         if img is not None:
             return img
+
+    def augment_support_set(self, support_images: torch.Tensor, support_labels: torch.Tensor):
+        """
+        Args:
+            support_images (torch.Tensor): tensor containing the images of one task
+            support_labels (torch.Tensor): tensor containing the labels for one task
+        Returns:
+            augmented_support_images (torch.Tensor): tensor containing the augmented support images for one task
+            augmented_support_labels (torch.Tensor): tensor containing the augmented support labels for one task
+        """
+        convert_img_to_tensor = transforms.ToTensor()
+
+        augmented_support_images = support_images.detach().clone()
+        augmented_support_labels = support_labels.detach().clone()
+        N_WAY = len(support_images)
+
+        for content_img_id in tqdm(range(N_WAY), desc="Support set augmentation"):
+            for style_img_id in range(N_WAY):
+                if content_img_id != style_img_id:
+                    new_img = convert_img_to_tensor(
+                        self.photo_style_transfer(
+                            support_images[content_img_id],
+                            support_images[style_img_id],
+                            save_not_return=False,
+                        )
+                    )[None, :]
+                    augmented_support_images = augmented_support_images.resize_(
+                        augmented_support_images.shape[0], 3, new_img.shape[-2], new_img.shape[-1]
+                    )
+                    augmented_support_images = torch.cat(
+                        (augmented_support_images, new_img),
+                        0,
+                    )
+                    augmented_support_labels = torch.cat(
+                        (augmented_support_labels, torch.tensor([augmented_support_labels[content_img_id]])), -1
+                    )
+        return augmented_support_images, augmented_support_labels

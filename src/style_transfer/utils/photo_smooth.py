@@ -18,7 +18,14 @@ class Propagator(nn.Module):
         self.beta = beta
 
     def process(self, initImg, contentImg):
+        """
+        Args:
+            initImg (either path or PIL.Image): representing the init image
+            contentImg (either path or PIL.Image): representing the content image
 
+        Returns:
+            Image.PIL :
+        """
         if type(contentImg) == str:
             content = imageio.imread(contentImg, mode="RGB")
         else:

@@ -23,8 +23,9 @@ class Timer:
         self.start_time = time.time()
 
     def __exit__(self, exc_type, exc_value, exc_tb):
-        if self.start_time is not None:
-            print(self.msg % (time.time() - self.start_time))
+        # if self.start_time is not None:
+        # print(self.msg % (time.time() - self.start_time))
+        pass
 
 
 def memory_limit_image_resize(cont_img):
@@ -43,15 +44,15 @@ def memory_limit_image_resize(cont_img):
             cont_img.thumbnail((MAXSIZE, int(cont_img.height * 1.0 / cont_img.width * MAXSIZE)), Image.BICUBIC)
         else:
             cont_img.thumbnail(((int(cont_img.width * 1.0 / cont_img.height * MAXSIZE), MAXSIZE)), Image.BICUBIC)
-    print("Resize image: (%d,%d)->(%d,%d)" % (orig_width, orig_height, cont_img.width, cont_img.height))
+    # print("Resize image: (%d,%d)->(%d,%d)" % (orig_width, orig_height, cont_img.width, cont_img.height))
     return cont_img.width, cont_img.height
 
 
 def stylization(
     stylization_module,
     smoothing_module,
-    content_image_path,
-    style_image_path,
+    content_image,
+    style_image,
     content_seg_path,
     style_seg_path,
     output_image_path,
@@ -64,8 +65,10 @@ def stylization(
 ):
     # Load image
     with torch.no_grad():
-        cont_img = Image.open(content_image_path).convert("RGB")
-        styl_img = Image.open(style_image_path).convert("RGB")
+        # cont_img = Image.open(content_image_path).convert("RGB")
+        # styl_img = Image.open(style_image_path).convert("RGB")
+        cont_img = content_image.copy()
+        styl_img = style_image.copy()
 
         new_cw, new_ch = memory_limit_image_resize(cont_img)
         new_sw, new_sh = memory_limit_image_resize(styl_img)
@@ -109,7 +112,7 @@ def stylization(
             utils.save_image(stylized_img.data.cpu().float(), output_image_path, nrow=1, padding=0)
 
             with Timer("Elapsed time in propagation: %f"):
-                out_img = smoothing_module.process(output_image_path, content_image_path)
+                out_img = smoothing_module.process(output_image_path, content_image)
             out_img.save(output_image_path)
 
             if not cuda:
@@ -118,7 +121,12 @@ def stylization(
 
             if no_post is False:
                 with Timer("Elapsed time in post processing: %f"):
-                    out_img = smooth_filter(output_image_path, content_image_path, f_radius=15, f_edge=1e-1)
+                    out_img = smooth_filter(
+                        output_image_path,
+                        content_image,
+                        f_radius=15,
+                        f_edge=1e-1,
+                    )
             out_img.save(output_image_path)
         else:
             with Timer("Elapsed time in stylization: %f"):

@@ -5,6 +5,7 @@ from typing import Union
 import torch
 from tqdm import tqdm
 import torchvision.transforms as transforms
+import torch.nn.functional as F
 
 from src.style_transfer.utils.photo_wct import PhotoWCT
 from src.style_transfer.utils.photo_smooth import Propagator
@@ -79,8 +80,8 @@ class FastPhotoStyle:
                             save_not_return=False,
                         )
                     )[None, :]
-                    augmented_support_images = augmented_support_images.resize_(
-                        augmented_support_images.shape[0], 3, new_img.shape[-2], new_img.shape[-1]
+                    new_img = F.interpolate(
+                        new_img, size=(augmented_support_images.shape[-1], augmented_support_images.shape[-1])
                     )
                     augmented_support_images = torch.cat(
                         (augmented_support_images, new_img),

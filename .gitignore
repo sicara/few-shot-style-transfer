@@ -6,3 +6,4 @@ scripts/__pycache__/
 .env
 data/gathered_abo_data_old.csv
 .vscode/
+src/tests/test_fast_photo_style.py

@@ -48,15 +48,18 @@ class FastPhotoStyle:
             style_image=transforms.ToPILImage()(style_photo).convert("RGB"),
             content_seg_path=[],
             style_seg_path=[],
-            output_image_path=(ROOT_FOLDER / save_output_path if save_output_path is not None else ROOT_FOLDER),
+            output_image_path=(
+                ROOT_FOLDER / save_output_path if save_output_path is not None else None
+            ),
             cuda=1,
             save_intermediate=False,
             no_post=False,
-            save_not_return=(save_output_path is not None),
         )
         return img
 
-    def augment_support_set(self, support_images: torch.Tensor, support_labels: torch.Tensor):
+    def augment_support_set(
+        self, support_images: torch.Tensor, support_labels: torch.Tensor
+    ):
         """
         Args:
             support_images (torch.Tensor): tensor containing the images of one task
@@ -69,7 +72,9 @@ class FastPhotoStyle:
         augmented_support_images = support_images.detach().clone()
         augmented_support_labels = support_labels.detach().clone()
 
-        for content_img_id, content_img in tqdm(enumerate(support_images), desc="Support set augmentation"):
+        for content_img_id, content_img in tqdm(
+            enumerate(support_images), desc="Support set augmentation"
+        ):
             for style_img_id, style_img in enumerate(support_images):
                 if content_img_id != style_img_id:
                     new_img = transforms.ToTensor()(

@@ -1,6 +1,5 @@
 #%%
 from src.abo import ABO
-from src.config import ROOT_FOLDER
 from src.style_transfer.fast_photo_style import FastPhotoStyle
 from src.few_shot_classifier import EvaluatorFewShotClassifier
 from pathlib import Path
@@ -64,6 +63,6 @@ plot_images(augmented_support_images, "support images", images_per_row=N_SHOT * 
 convolutional_network = resnet18(pretrained=True)
 convolutional_network.fc = nn.Flatten()
 few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
-EvaluatorFewShotClassifier(few_shot_model).evaluate(test_loader, style_transfer_augmentation=False)
+EvaluatorFewShotClassifier(few_shot_model).evaluate(test_loader, style_transfer_augmentation=True)
 
 # %%

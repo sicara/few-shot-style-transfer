@@ -9,4 +9,3 @@ style_image = transforms.ToTensor()(Image.open(ROOT_FOLDER / "src/style_transfer
 img = FastPhotoStyle().photo_style_transfer(
     content_image, style_image, save_output_path=ROOT_FOLDER / "src/style_transfer/examples/output1.png"
 )
-print("Style transferred image type: ", img)

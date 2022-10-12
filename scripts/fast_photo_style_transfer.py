@@ -6,7 +6,7 @@ from torchvision import transforms
 content_image = transforms.ToTensor()(Image.open(ROOT_FOLDER / "src/style_transfer/examples" / "content1.png"))
 style_image = transforms.ToTensor()(Image.open(ROOT_FOLDER / "src/style_transfer/examples" / "style1.png"))
 
-img = FastPhotoStyle(ROOT_FOLDER / "src/style_transfer").photo_style_transfer(
-    content_image, style_image, save_not_return=True
+img = FastPhotoStyle().photo_style_transfer(
+    content_image, style_image, save_output_path=ROOT_FOLDER / "src/style_transfer/examples/output1.png"
 )
 print("Style transferred image type: ", img)

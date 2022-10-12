@@ -1,57 +1,15 @@
 import torch
-from tqdm import tqdm
 from torch import nn
-from torchvision.models import resnet18
+import numpy as np
+from tqdm import tqdm
 from torch.utils.data import DataLoader
 from src.style_transfer.fast_photo_style import FastPhotoStyle
 from src.config import ROOT_FOLDER
 
 
-class PrototypicalNetworks(nn.Module):
-    def __init__(self, backbone: nn.Module):
-        super(PrototypicalNetworks, self).__init__()
-        self.backbone = backbone
-
-    def forward(
-        self,
-        support_images: torch.Tensor,
-        support_labels: torch.Tensor,
-        query_images: torch.Tensor,
-    ) -> torch.Tensor:
-        """
-        Predict query labels using labeled support images.
-        """
-        # Extract the features of support and query images
-        z_support = self.backbone.forward(support_images)
-        z_query = self.backbone.forward(query_images)
-
-        # Infer the number of different classes from the labels of the support set
-        n_way = len(torch.unique(support_labels))
-        # Prototype i is the mean of all instances of features corresponding to labels == i
-        z_proto = torch.cat(
-            [
-                z_support[torch.nonzero(support_labels == label)].mean(0)
-                for label in range(n_way)
-            ]
-        )
-
-        # Compute the euclidean distance from queries to prototypes
-        dists = torch.cdist(z_query, z_proto)
-
-        # And here is the super complicated operation to transform those distances into classification scores!
-        scores = -dists
-        return scores
-
-
-class FewShotClassifier:
-    def __init__(self) -> None:
-        self.few_shot_model = self.model_init()
-
-    @staticmethod
-    def model_init():
-        convolutional_network = resnet18(pretrained=True)
-        convolutional_network.fc = nn.Flatten()
-        return PrototypicalNetworks(convolutional_network).cuda()
+class EvaluatorFewShotClassifier:
+    def __init__(self, few_shot_classifier) -> None:
+        self.few_shot_model = few_shot_classifier
 
     def evaluate_on_one_task(
         self,

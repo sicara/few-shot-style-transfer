@@ -2,12 +2,15 @@
 from src.abo import ABO
 from src.config import ROOT_FOLDER
 from src.style_transfer.fast_photo_style import FastPhotoStyle
-from src.few_shot_classifier import FewShotClassifier
+from src.few_shot_classifier import EvaluatorFewShotClassifier
 from pathlib import Path
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from easyfsl.samplers import TaskSampler
 from easyfsl.utils import plot_images
+from torch import nn
+from torchvision.models import resnet18
+from easyfsl.methods.prototypical_networks import PrototypicalNetworks
 
 #%%
 root = Path("data/abo_dataset/images/small")
@@ -52,14 +55,15 @@ plot_images(example_support_images, "support images", images_per_row=N_SHOT)
 plot_images(example_query_images, "query images", images_per_row=N_QUERY)
 
 # %%
-augmented_support_images, augmented_support_labels = FastPhotoStyle(
-    ROOT_FOLDER / "src/style_transfer"
-).augment_support_set(example_support_images, example_support_labels)
+augmented_support_images, augmented_support_labels = FastPhotoStyle().augment_support_set(
+    example_support_images, example_support_labels
+)
 # %%
 plot_images(augmented_support_images, "support images", images_per_row=N_SHOT * N_WAY)
-plot_images(example_query_images, "query images", images_per_row=N_QUERY)
 #%%
-model = FewShotClassifier()
-model.evaluate(test_loader, style_transfer_augmentation=False)
+convolutional_network = resnet18(pretrained=True)
+convolutional_network.fc = nn.Flatten()
+few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+EvaluatorFewShotClassifier(few_shot_model).evaluate(test_loader, style_transfer_augmentation=False)
 
 # %%

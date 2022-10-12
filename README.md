@@ -7,6 +7,9 @@ You will need :
     -  `pyenv install 3.8.2`
 - The packages in the [requirements.txt](requirements.txt) file: 
     - with pip do: `pip install -r requirements.txt`
+- CuPy, compatible with your cuda toolkit version:
+    - check [this](https://docs.cupy.dev/en/stable/install.html) to know how to install CuPy adapted to your cuda toolkit version
+    - for example, if `nvcc --version` says that you have the 10.1 release of the cuda toolkit, install CuPy with pip using `pip install cupy-cuda101`
 
 ### Dataset
 We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-objects.s3.amazonaws.com/index.html). Here are the steps to install locally the dataset, needed to run the script of this repo:
@@ -29,9 +32,9 @@ We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-obje
                  |--** 
                     |--********.jpg
     ```
-
 ## References
-[1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu,
-Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen,
-Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset
-and benchmarks for real-world 3d object understanding. CVPR, 2022.
+[1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu, Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen, Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset and benchmarks for real-world 3d object understanding. CVPR, 2022.
+
+[2] Yijun Li, Ming-Yu Liu, Xueting Li, Ming-Hsuan Yang, Jan Kautz. A Closed-form Solution to Photorealistic Image Stylization. CoRR, 2018.
+
+[3] Bennequin, E. [easyfsl](https://github.com/sicara/easy-few-shot-learning) [Computer software].

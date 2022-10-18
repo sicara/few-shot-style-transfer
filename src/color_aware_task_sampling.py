@@ -2,6 +2,7 @@ from typing import List, Iterator
 import torch
 import random
 from loguru import logger
+import pandas as pd
 
 from easyfsl.samplers.task_sampler import TaskSampler
 from src.abo import ABO
@@ -41,20 +42,13 @@ class ColorAwareTaskSampler(TaskSampler):
             )
         self.n_colors = n_colors
 
-        self.items_per_label_per_color = {}
-        for item, (label, color) in enumerate(
-            zip(dataset.get_labels(), dataset.get_colors())
-        ):
-            if (
-                label in self.items_per_label_per_color.keys()
-                and color in self.items_per_label_per_color[label].keys()
-            ):
-                self.items_per_label_per_color[label][color].append(item)
-            elif label in self.items_per_label_per_color.keys():
-                self.items_per_label_per_color[label][color] = [item]
-            else:
-                self.items_per_label_per_color[label] = {}
-                self.items_per_label_per_color[label][color] = [item]
+        self.items_df = pd.DataFrame(
+            {
+                "item": [i for i in range(len(dataset))],
+                "label": dataset.get_labels(),
+                "color": dataset.get_colors(),
+            }
+        )
 
     def __iter__(self) -> Iterator[List[int]]:
         for _ in range(self.n_tasks):
@@ -65,16 +59,20 @@ class ColorAwareTaskSampler(TaskSampler):
                 [
                     # pylint: disable=not-callable
                     torch.tensor(
-                        random.sample(  # avec des df ça serait plus simple: filtre sur 2 colonnes
-                            self.items_per_label_per_color[label][
-                                random.sample(color_list, 1)
-                            ],
+                        random.sample(
+                            list(
+                                self.items_df.loc[
+                                    (self.items_df["label"] == label)
+                                    & (self.items_df["color"] in color_list),
+                                    ["item"],
+                                ]
+                            ),
                             self.n_shot + self.n_query,
                         )
                     )
                     # pylint: enable=not-callable
                     for label in random.sample(
-                        self.items_per_label_per_color.keys(), self.n_way
+                        list(self.items_df["label"].unique()), self.n_way
                     )
                 ]
             ).tolist()

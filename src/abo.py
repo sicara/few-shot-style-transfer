@@ -87,16 +87,20 @@ class ABO(FewShotDataset):
 
         return data.assign(label=lambda df: df["product_type"].map(label_mapping))
 
-    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int, str]:
         img = self.transform(
             Image.open(self.root / self.data.path[item]).convert("RGB")
         )
         label = self.data.label[item]
+        color = self.data.en_color[item]
 
-        return img, label
+        return img, label, color
 
     def __len__(self) -> int:
         return len(self.data)
 
     def get_labels(self) -> List[int]:
         return list(self.data.label)
+
+    def get_colors(self) -> List[str]:
+        return list(self.data.en_color)

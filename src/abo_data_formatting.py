@@ -135,6 +135,8 @@ class ABOFormatting:
                 "multicoloured": "multicolored",
                 "multicolourated": "multicolored",
                 "goldroeseilver": "goldrosesilver",
+                "golden": "gold",
+                "navy": "blue",
             }
         )
 

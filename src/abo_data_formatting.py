@@ -137,6 +137,7 @@ class ABOFormatting:
                 "goldroeseilver": "goldrosesilver",
                 "golden": "gold",
                 "navy": "blue",
+                "nero": "black",
             }
         )
 

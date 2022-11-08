@@ -39,10 +39,10 @@ class ABO(FewShotDataset):
             colors_json: path to the json file containing the selected colors. If no path is given, all the colors are used.
         """
         self.root = ROOT_FOLDER / root
-        self.data = self.load_specs(
+        self.data, self.class_names = self.load_specs(
             specs_file, classes_json, colors_json, min_number_item_per_class
         )
-        self.class_names = list(self.data["product_type"].unique())
+        # self.class_names = list(self.data["product_type"].unique())
         self.transform = (
             transform if transform else default_transform(image_size, training=training)
         )
@@ -85,7 +85,10 @@ class ABO(FewShotDataset):
 
         label_mapping = {name: class_names.index(name) for name in class_names}
 
-        return data.assign(label=lambda df: df["product_type"].map(label_mapping))
+        return (
+            data.assign(label=lambda df: df["product_type"].map(label_mapping)),
+            class_names,
+        )
 
     def __getitem__(self, item: int) -> Tuple[Tensor, int, str]:
         img = self.transform(

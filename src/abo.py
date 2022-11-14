@@ -54,7 +54,7 @@ class ABO(FewShotDataset):
         classes_json: Optional[Path],
         colors_json: Optional[Path],
         min_number_item_per_class: int,
-    ) -> DataFrame:
+    ) -> Tuple[DataFrame, List[str]]:
         data = pd.read_csv(specs_file)
         if colors_json is not None:
             with open(ROOT_FOLDER / colors_json) as json_file:

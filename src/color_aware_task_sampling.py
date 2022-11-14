@@ -77,7 +77,8 @@ class ColorAwareTaskSampler(TaskSampler):
             class_2 = random.sample(
                 list(
                     possible_classes_with_enough_colors.loc[
-                        possible_classes_with_enough_colors["count"] >= 8
+                        (possible_classes_with_enough_colors["count"] >= 8)
+                        & (possible_classes_with_enough_colors["label"] != class_1)
                     ]["label"]
                 ),
                 1,
@@ -87,6 +88,7 @@ class ColorAwareTaskSampler(TaskSampler):
                     possible_classes_with_enough_colors.loc[
                         (possible_classes_with_enough_colors["label"] == class_2)
                         & (possible_classes_with_enough_colors["count"] >= 8)
+                        & (possible_classes_with_enough_colors["color"] != color_A)
                     ]["color"]
                 ),
                 1,
@@ -155,7 +157,7 @@ class ColorAwareTaskSampler(TaskSampler):
                     ),
                     8 - len(items_B_1),
                 )
-            yield items_A_1 + items_B_1 + items_A_2 + items_B_2
+            yield items_A_1 + items_B_1 + items_B_2 + items_A_2
 
     def episodic_collate_fn(
         self, input_data: List[Tuple[Tensor, int, str]]

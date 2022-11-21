@@ -27,9 +27,10 @@ class ColorAwareTaskSampler(TaskSampler):
         Args:
             dataset (FewShotDataset): dataset from which to sample classification tasks. Must have a field 'label': a
                 list of length len(dataset) containing containing the labels of all images.
-            n_query (int): number of query images for each class in one task
+            n_query (int): number of query images for each class in one task, works for 16 now
             n_tasks (int): number of tasks to sample
         """
+        # TODO (21/11): makes n_query used, i.e. one can choose more than 16
         self.n_way = 2
         self.n_shot = 1
         self.n_query = n_query

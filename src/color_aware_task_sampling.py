@@ -94,70 +94,31 @@ class ColorAwareTaskSampler(TaskSampler):
                 1,
             )[0]
             # HOW.4
-            items_A_1 = list(
-                self.items_df.loc[
-                    (self.items_df["color"] == color_A)
-                    & (self.items_df["label"] == class_1)
-                ]["item"]
-            )
-            if len(items_A_1) >= 9:
-                items_A_1 = random.sample(items_A_1, 9)
-            else:
-                items_A_1 = items_A_1 + random.sample(
-                    list(
-                        self.items_df.loc[
-                            (self.items_df["label"] == class_1)
-                            & (self.items_df["color"] != color_A)
-                        ]["item"]
-                    ),
-                    9 - len(items_A_1),
-                )
-            items_A_2 = random.sample(
+            items_A_1 = self.populate_category(class_1, color_A, 9)
+            items_B_1 = self.populate_category(class_1, color_B, 8)
+            items_B_2 = self.populate_category(class_2, color_B, 9)
+            items_A_2 = self.populate_category(class_2, color_A, 8)
+            yield items_A_1 + items_B_1 + items_B_2 + items_A_2
+
+    def populate_category(self, label: str, color: str, amount: int) -> List:
+        items_label_class = list(
+            self.items_df.loc[
+                (self.items_df["color"] == color) & (self.items_df["label"] == label)
+            ]["item"]
+        )
+        if len(items_label_class) >= amount:
+            items_label_class = random.sample(items_label_class, amount)
+        else:
+            items_label_class = items_label_class + random.sample(
                 list(
                     self.items_df.loc[
-                        (self.items_df["color"] == color_A)
-                        & (self.items_df["label"] == class_2)
+                        (self.items_df["label"] == label)
+                        & (self.items_df["color"] != color)
                     ]["item"]
                 ),
-                8,
+                amount - len(items_label_class),
             )
-            items_B_2 = list(
-                self.items_df.loc[
-                    (self.items_df["color"] == color_B)
-                    & (self.items_df["label"] == class_2)
-                ]["item"]
-            )
-            if len(items_B_2) >= 9:
-                items_B_2 = random.sample(items_B_2, 9)
-            else:
-                items_B_2 = items_B_2 + random.sample(
-                    list(
-                        self.items_df.loc[
-                            (self.items_df["label"] == class_2)
-                            & (self.items_df["color"] != color_B)
-                        ]["item"]
-                    ),
-                    9 - len(items_B_2),
-                )
-            items_B_1 = list(
-                self.items_df.loc[
-                    (self.items_df["color"] == color_B)
-                    & (self.items_df["label"] == class_1)
-                ]["item"]
-            )
-            if len(items_B_1) >= 8:
-                items_B_1 = random.sample(items_B_1, 8)
-            else:
-                items_B_1 = items_B_1 + random.sample(
-                    list(
-                        self.items_df.loc[
-                            (self.items_df["label"] == class_1)
-                            & (self.items_df["color"] != color_B)
-                        ]["item"]
-                    ),
-                    8 - len(items_B_1),
-                )
-            yield items_A_1 + items_B_1 + items_B_2 + items_A_2
+        return items_label_class
 
     def episodic_collate_fn(
         self, input_data: List[Tuple[Tensor, int, str]]

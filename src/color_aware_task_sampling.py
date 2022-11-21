@@ -12,15 +12,14 @@ from src.abo import ABO
 
 class ColorAwareTaskSampler(TaskSampler):
     """
-    Samples batches in the shape of few-shot classification tasks, and creating
+    Samples batches in the shape of one-shot classification tasks, and creating
     diagonal support set according to colors. At each iteration, it will sample
-    n_way classes, and then sample support and query images from these classes.
+    2 classes, and then sample support and query images from these classes.
     """
 
     def __init__(
         self,
         dataset: ABO,
-        n_shot: int,
         n_query: int,
         n_tasks: int,
     ):
@@ -28,15 +27,11 @@ class ColorAwareTaskSampler(TaskSampler):
         Args:
             dataset (FewShotDataset): dataset from which to sample classification tasks. Must have a field 'label': a
                 list of length len(dataset) containing containing the labels of all images.
-            n_way (int): number of classes in one task
-            n_shot (int): number of support images for each class in one task
             n_query (int): number of query images for each class in one task
             n_tasks (int): number of tasks to sample
-            n_colors (int, optional): Number of different colors used for one task (e.g. if equals 2, then one
-                class is represented by color A and all other classes are represented by color B). Defaults to 2.
         """
         self.n_way = 2
-        self.n_shot = n_shot
+        self.n_shot = 1
         self.n_query = n_query
         self.n_tasks = n_tasks
         self.n_colors = 2
@@ -132,7 +127,7 @@ class ColorAwareTaskSampler(TaskSampler):
                 - the label of this image
                 - the color of this image
         Returns:
-            tuple(Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, list[int]): respectively:
+            tuple(Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]): respectively:
                 - support images,
                 - their labels,
                 - their colors,

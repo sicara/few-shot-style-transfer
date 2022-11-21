@@ -99,6 +99,12 @@ class ABO(FewShotDataset):
 
         return img, label, color
 
+    def get_item_label(self, item: int) -> int:
+        return self.data.label[item]
+
+    def get_item_color(self, item: int) -> str:
+        return self.data.en_color[item]
+
     def __len__(self) -> int:
         return len(self.data)
 

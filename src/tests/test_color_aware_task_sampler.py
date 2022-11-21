@@ -30,7 +30,7 @@ class TestIter:
         task_data = next(iter(COLOR_AWARE_TASK_SAMPLER))
         colors_list = []
         for sample in task_data:
-            color = ABO_DATASET.__getitem__(sample)[2]
+            color = ABO_DATASET.get_item_color(sample)
             if color not in colors_list:
                 colors_list.append(color)
         assert len(colors_list) >= 2
@@ -40,7 +40,7 @@ class TestIter:
         task_data = next(iter(COLOR_AWARE_TASK_SAMPLER))
         label_list = []
         for sample in task_data:
-            label = ABO_DATASET.__getitem__(sample)[1]
+            label = ABO_DATASET.get_item_label(sample)
             if label not in label_list:
                 label_list.append(label)
         assert len(label_list) == 2
@@ -49,17 +49,17 @@ class TestIter:
     def test_support_colors_in_all_classes():
         task_data = next(iter(COLOR_AWARE_TASK_SAMPLER))
         support_colors = [
-            ABO_DATASET.__getitem__(task_data[0])[2],
-            ABO_DATASET.__getitem__(task_data[17])[2],
+            ABO_DATASET.get_item_color(task_data[0]),
+            ABO_DATASET.get_item_color(task_data[17]),
         ]
         class_1_colors = []
         for class_1_sample in task_data[1:17]:
-            color = ABO_DATASET.__getitem__(class_1_sample)[2]
+            color = ABO_DATASET.get_item_color(class_1_sample)
             if color not in class_1_colors and color in support_colors:
                 class_1_colors.append(color)
         class_2_colors = []
         for class_2_sample in task_data[18:]:
-            color = ABO_DATASET.__getitem__(class_2_sample)[2]
+            color = ABO_DATASET.get_item_color(class_2_sample)
             if color not in class_2_colors and color in support_colors:
                 class_2_colors.append(color)
         assert len(class_1_colors) == 2 and len(class_2_colors) == 2
@@ -68,7 +68,7 @@ class TestIter:
     def test_support_colors_are_different():
         task_data = next(iter(COLOR_AWARE_TASK_SAMPLER))
         support_colors = [
-            ABO_DATASET.__getitem__(task_data[0])[2],
-            ABO_DATASET.__getitem__(task_data[17])[2],
+            ABO_DATASET.get_item_color(task_data[0]),
+            ABO_DATASET.get_item_color(task_data[17])[2],
         ]
         assert support_colors[0] != support_colors[1]

@@ -38,18 +38,18 @@ class ABO(FewShotDataset):
             classes_json: path to the json file containing the selected classes. If no path is given, all the classes are used.
             colors_json: path to the json file containing the selected colors. If no path is given, all the colors are used.
         """
+        super().__init__()
         self.root = ROOT_FOLDER / root
-        self.data, self.class_names = self.load_specs(
+        self.data, self.class_names = self.load_specs_and_classes(
             specs_file, classes_json, colors_json, min_number_item_per_class
         )
-        # self.class_names = list(self.data["product_type"].unique())
         self.transform = (
             transform if transform else default_transform(image_size, training=training)
         )
         self.min_number_of_item_per_class = min_number_item_per_class
 
     @staticmethod
-    def load_specs(
+    def load_specs_and_classes(
         specs_file: Union[Path, str],
         classes_json: Optional[Path],
         colors_json: Optional[Path],

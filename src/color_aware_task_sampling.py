@@ -43,23 +43,22 @@ class ColorAwareTaskSampler(TaskSampler):
                 "color": dataset.get_colors(),
             }
         )
+        self.colors_list = list(self.items_df["color"].unique())
 
     def __iter__(self) -> Iterator[List[int]]:
         for _ in range(self.n_tasks):
-            # HOW.1
-            color_A = random.sample(list(self.items_df["color"].unique()), 1)[0]
-            # HOW.2
-            possible_classes = (
+            # color A choice
+            color_A = random.sample(self.colors_list, 1)[0]
+            # classes with at least 8 elements of color A, and choice of one
+            possible_classes = list(
                 self.items_df.loc[self.items_df["color"] == color_A]
                 .groupby(["label"])["color"]
                 .count()
                 .reset_index(name="count")
-            )
-            possible_classes = list(
-                possible_classes.loc[possible_classes["count"] >= 8]["label"]
+                .loc[lambda df: df["count"] >= 8]["label"]
             )
             class_1 = random.sample(possible_classes, 1)[0]
-            # HOW.3
+            # class 2 and color B choice
             possible_classes_with_enough_colors = (
                 self.items_df.loc[
                     (self.items_df["label"].isin(possible_classes))
@@ -88,7 +87,7 @@ class ColorAwareTaskSampler(TaskSampler):
                 ),
                 1,
             )[0]
-            # HOW.4
+            # sampling
             items_A_1 = self.populate_category(class_1, color_A, 9)
             items_B_1 = self.populate_category(class_1, color_B, 8)
             items_B_2 = self.populate_category(class_2, color_B, 9)
@@ -102,9 +101,9 @@ class ColorAwareTaskSampler(TaskSampler):
             ]["item"]
         )
         if len(items_label_class) >= amount:
-            items_label_class = random.sample(items_label_class, amount)
+            sampled_items = random.sample(items_label_class, amount)
         else:
-            items_label_class = items_label_class + random.sample(
+            sampled_items = items_label_class + random.sample(
                 list(
                     self.items_df.loc[
                         (self.items_df["label"] == label)
@@ -113,7 +112,7 @@ class ColorAwareTaskSampler(TaskSampler):
                 ),
                 amount - len(items_label_class),
             )
-        return items_label_class
+        return sampled_items
 
     def episodic_collate_fn(
         self, input_data: List[Tuple[Tensor, int, str]]

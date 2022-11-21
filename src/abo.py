@@ -38,23 +38,23 @@ class ABO(FewShotDataset):
             classes_json: path to the json file containing the selected classes. If no path is given, all the classes are used.
             colors_json: path to the json file containing the selected colors. If no path is given, all the colors are used.
         """
+        super().__init__()
         self.root = ROOT_FOLDER / root
-        self.data = self.load_specs(
+        self.data, self.class_names = self.load_specs_and_classes(
             specs_file, classes_json, colors_json, min_number_item_per_class
         )
-        self.class_names = list(self.data["product_type"].unique())
         self.transform = (
             transform if transform else default_transform(image_size, training=training)
         )
         self.min_number_of_item_per_class = min_number_item_per_class
 
     @staticmethod
-    def load_specs(
+    def load_specs_and_classes(
         specs_file: Union[Path, str],
         classes_json: Optional[Path],
         colors_json: Optional[Path],
         min_number_item_per_class: int,
-    ) -> DataFrame:
+    ) -> Tuple[DataFrame, List[str]]:
         data = pd.read_csv(specs_file)
         if colors_json is not None:
             with open(ROOT_FOLDER / colors_json) as json_file:
@@ -85,18 +85,31 @@ class ABO(FewShotDataset):
 
         label_mapping = {name: class_names.index(name) for name in class_names}
 
-        return data.assign(label=lambda df: df["product_type"].map(label_mapping))
+        return (
+            data.assign(label=lambda df: df["product_type"].map(label_mapping)),
+            class_names,
+        )
 
-    def __getitem__(self, item: int) -> Tuple[Tensor, int]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int, str]:
         img = self.transform(
             Image.open(self.root / self.data.path[item]).convert("RGB")
         )
         label = self.data.label[item]
+        color = self.data.en_color[item]
 
-        return img, label
+        return img, label, color
+
+    def get_item_label(self, item: int) -> int:
+        return self.data.label[item]
+
+    def get_item_color(self, item: int) -> str:
+        return self.data.en_color[item]
 
     def __len__(self) -> int:
         return len(self.data)
 
     def get_labels(self) -> List[int]:
         return list(self.data.label)
+
+    def get_colors(self) -> List[str]:
+        return list(self.data.en_color)

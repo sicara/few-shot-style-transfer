@@ -22,7 +22,9 @@ class EvaluatorFewShotClassifier:
         """
         Returns the number of correct predictions of query labels, and the total number of predictions.
         """
-        self.few_shot_model.process_support_set(support_images.cuda(), support_labels.cuda())
+        self.few_shot_model.process_support_set(
+            support_images.cuda(), support_labels.cuda()
+        )
         return (
             torch.max(
                 self.few_shot_model(query_images.cuda()).detach().data,
@@ -31,7 +33,9 @@ class EvaluatorFewShotClassifier:
             == query_labels.cuda()
         ).sum().item(), len(query_labels)
 
-    def evaluate(self, data_loader: DataLoader, style_transfer_augmentation: bool = False):
+    def evaluate(
+        self, data_loader: DataLoader, style_transfer_augmentation: bool = False
+    ):
         accuracy = []
 
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
@@ -49,8 +53,12 @@ class EvaluatorFewShotClassifier:
                     (
                         support_images,
                         support_labels,
-                    ) = FastPhotoStyle().augment_support_set(support_images, support_labels)
-                correct, total = self.evaluate_on_one_task(support_images, support_labels, query_images, query_labels)
+                    ) = FastPhotoStyle().augment_support_set(
+                        support_images, support_labels
+                    )
+                correct, total = self.evaluate_on_one_task(
+                    support_images, support_labels, query_images, query_labels
+                )
                 accuracy.append(100 * correct / total)
 
         print(

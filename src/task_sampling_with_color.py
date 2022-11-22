@@ -1,22 +1,16 @@
+from abc import abstractmethod
 from typing import List, Iterator, Tuple
 import torch
 from torch import Tensor
 import random
-import numpy as np
-from loguru import logger
 import pandas as pd
 
 from easyfsl.samplers.task_sampler import TaskSampler
 from src.abo import ABO
 
 
-class ColorAwareTaskSampler(TaskSampler):
-    """
-    Samples batches in the shape of one-shot classification tasks, and creating
-    diagonal support set according to colors. At each iteration, it will sample
-    2 classes, and then sample support and query images from these classes.
-    """
-
+class TaskSamplerWithColor(TaskSampler):
+    @abstractmethod
     def __init__(
         self,
         dataset: ABO,
@@ -45,6 +39,88 @@ class ColorAwareTaskSampler(TaskSampler):
             }
         )
         self.colors_list = list(self.items_df["color"].unique())
+        self.class_list = list(self.items_df["label"].unique())
+
+    @abstractmethod
+    def __iter__(self) -> Iterator[List[int]]:
+        pass
+
+    @abstractmethod
+    def populate_category(self) -> List:
+        pass
+
+    @abstractmethod
+    def episodic_collate_fn(
+        self, input_data: List[Tuple[Tensor, int, str]]
+    ) -> Tuple[Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]]:
+        """
+        Collate function to be used as argument for the collate_fn parameter of episodic
+            data loaders.
+        Args:
+            input_data: each element is a tuple containing:
+                - an image as a torch Tensor
+                - the label of this image
+                - the color of this image
+        Returns:
+            tuple(Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]): respectively:
+                - support images,
+                - their labels,
+                - their colors,
+                - query images,
+                - their labels,
+                - their colors,
+                - the dataset class ids of the class sampled in the episode
+        """
+        true_class_ids = list({x[1] for x in input_data})
+        colors_list = list(x[2] for x in input_data)
+
+        all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
+        all_images = all_images.reshape(
+            (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
+        )
+        # pylint: disable=not-callable
+        all_labels = torch.tensor(
+            [true_class_ids.index(x[1]) for x in input_data]
+        ).reshape((self.n_way, self.n_shot + self.n_query))
+        # pylint: enable=not-callable
+
+        support_images = all_images[:, : self.n_shot].reshape(
+            (-1, *all_images.shape[2:])
+        )
+        query_images = all_images[:, self.n_shot :].reshape((-1, *all_images.shape[2:]))
+        support_labels = all_labels[:, : self.n_shot].flatten()
+        query_labels = all_labels[:, self.n_shot :].flatten()
+        support_colors = [colors_list[0], colors_list[self.n_query + self.n_shot]]
+        query_colors = (
+            colors_list[1 : self.n_query + 1]
+            + colors_list[self.n_query + self.n_shot + 1 :]
+        )
+
+        return (
+            support_images,
+            support_labels,
+            support_colors,
+            query_images,
+            query_labels,
+            query_colors,
+            true_class_ids,
+        )
+
+
+class ColorAwareTaskSampler(TaskSamplerWithColor):
+    """
+    Samples batches in the shape of one-shot classification tasks, and creating
+    diagonal support set according to colors. At each iteration, it will sample
+    2 classes, and then sample support and query images from these classes.
+    """
+
+    def __init__(
+        self,
+        dataset: ABO,
+        n_query: int,
+        n_tasks: int,
+    ):
+        super().__init__(dataset, n_query, n_tasks)
 
     def __iter__(self) -> Iterator[List[int]]:
         for _ in range(self.n_tasks):
@@ -115,58 +191,31 @@ class ColorAwareTaskSampler(TaskSampler):
             )
         return sampled_items
 
-    def episodic_collate_fn(
-        self, input_data: List[Tuple[Tensor, int, str]]
-    ) -> Tuple[Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]]:
-        """
-        Collate function to be used as argument for the collate_fn parameter of episodic
-            data loaders.
-        Args:
-            input_data: each element is a tuple containing:
-                - an image as a torch Tensor
-                - the label of this image
-                - the color of this image
-        Returns:
-            tuple(Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]): respectively:
-                - support images,
-                - their labels,
-                - their colors,
-                - query images,
-                - their labels,
-                - their colors,
-                - the dataset class ids of the class sampled in the episode
-        """
-        true_class_ids = list({x[1] for x in input_data})
-        colors_list = list(x[2] for x in input_data)
 
-        all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
-        all_images = all_images.reshape(
-            (self.n_way, self.n_shot + self.n_query, *all_images.shape[1:])
-        )
-        # pylint: disable=not-callable
-        all_labels = torch.tensor(
-            [true_class_ids.index(x[1]) for x in input_data]
-        ).reshape((self.n_way, self.n_shot + self.n_query))
-        # pylint: enable=not-callable
+class NonColorAwareTaskSampler(TaskSamplerWithColor):
+    """
+    Samples batches in the shape of one-shot classification tasks. At each
+    iteration, it will sample 2 classes, and then sample support and query
+    images from these classes.
+    """
 
-        support_images = all_images[:, : self.n_shot].reshape(
-            (-1, *all_images.shape[2:])
-        )
-        query_images = all_images[:, self.n_shot :].reshape((-1, *all_images.shape[2:]))
-        support_labels = all_labels[:, : self.n_shot].flatten()
-        query_labels = all_labels[:, self.n_shot :].flatten()
-        support_colors = [colors_list[0], colors_list[self.n_query + self.n_shot]]
-        query_colors = (
-            colors_list[1 : self.n_query + 1]
-            + colors_list[self.n_query + self.n_shot + 1 :]
-        )
+    def __init__(
+        self,
+        dataset: ABO,
+        n_query: int,
+        n_tasks: int,
+    ):
+        super().__init__(dataset, n_query, n_tasks)
 
-        return (
-            support_images,
-            support_labels,
-            support_colors,
-            query_images,
-            query_labels,
-            query_colors,
-            true_class_ids,
+    def __iter__(self) -> Iterator[List[int]]:
+        for _ in range(self.n_tasks):
+            selected_classes = random.sample(self.class_list, 2)
+            items_1 = self.populate_category(selected_classes[0])
+            items_2 = self.populate_category(selected_classes[1])
+            yield items_1 + items_2
+
+    def populate_category(self, label: str) -> List:
+        items_from_label = list(
+            self.items_df.loc[(self.items_df["label"] == label)]["item"]
         )
+        return random.sample(items_from_label, self.n_query + self.n_shot)

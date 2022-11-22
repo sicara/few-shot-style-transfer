@@ -1,11 +1,17 @@
 #%%
+from pathlib import Path
+from torch.utils.data import DataLoader
+from torch import nn
+from torchvision import transforms
+from torchvision.models import resnet18
+
+from easyfsl.utils import plot_images
+from easyfsl.methods.prototypical_networks import PrototypicalNetworks
+
 from src.abo import ABO
 from src.style_transfer.fast_photo_style import FastPhotoStyle
-from pathlib import Path
-from torchvision import transforms
-from torch.utils.data import DataLoader
 from src.color_aware_task_sampling import ColorAwareTaskSampler
-from easyfsl.utils import plot_images
+from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
 #%%
 root = Path("data/abo_dataset/images/small")
@@ -60,4 +66,11 @@ plot_images(example_query_images, "query images", images_per_row=N_QUERY)
 ) = FastPhotoStyle().augment_support_set(example_support_images, example_support_labels)
 # %%
 plot_images(augmented_support_images, "support images", images_per_row=4)
+#%%
+convolutional_network = resnet18(pretrained=True)
+convolutional_network.fc = nn.Flatten()
+few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
+    test_loader, style_transfer_augmentation=False
+)
 # %%

@@ -10,7 +10,7 @@ from easyfsl.methods.prototypical_networks import PrototypicalNetworks
 
 from src.abo import ABO
 from src.style_transfer.fast_photo_style import FastPhotoStyle
-from src.color_aware_task_sampling import ColorAwareTaskSampler
+from src.task_sampling_with_color import ColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
 #%%

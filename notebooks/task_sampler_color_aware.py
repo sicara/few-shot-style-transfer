@@ -70,7 +70,58 @@ plot_images(augmented_support_images, "support images", images_per_row=4)
 convolutional_network = resnet18(pretrained=True)
 convolutional_network.fc = nn.Flatten()
 few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
-EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
+classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
     test_loader, style_transfer_augmentation=False
+)
+# %%
+classified_dataset["same_color_as_support_img"] = classified_dataset.apply(
+    lambda row: ((row.color == row.support_set_1_color) and (row.true_label == 0.0))
+    or ((row.color == row.support_set_2_color) and (row.true_label == 1.0)),
+    axis=1,
+)
+classified_dataset["same_color_as_other_support_img"] = classified_dataset.apply(
+    lambda row: ((row.color == row.support_set_1_color) and (row.true_label == 1.0))
+    or ((row.color == row.support_set_2_color) and (row.true_label == 0.0)),
+    axis=1,
+)
+total_number = len(classified_dataset)
+misclassified_number = len(
+    classified_dataset.loc[
+        classified_dataset["true_label"] != classified_dataset["predicted_label"]
+    ]
+)
+misclassified_with_same_color_as_support = classified_dataset.loc[
+    (classified_dataset["same_color_as_support_img"] == True)
+    & (classified_dataset["true_label"] != classified_dataset["predicted_label"])
+]
+with_same_color_as_support = classified_dataset.loc[
+    (classified_dataset["same_color_as_support_img"] == True)
+]
+misclassified_with_same_color_as_other_support = classified_dataset.loc[
+    (classified_dataset["same_color_as_other_support_img"] == True)
+    & (classified_dataset["true_label"] != classified_dataset["predicted_label"])
+]
+with_same_color_as_other_support = classified_dataset.loc[
+    (classified_dataset["same_color_as_other_support_img"] == True)
+]
+print("total", total_number)
+print("misclassified_number", misclassified_number)
+print(
+    "misclassified_with_same_color_as_support",
+    len(misclassified_with_same_color_as_support),
+    ": ",
+    100
+    * len(misclassified_with_same_color_as_support)
+    / len(with_same_color_as_support),
+    "%",
+)
+print(
+    "misclassified_with_same_color_as_other_support",
+    len(misclassified_with_same_color_as_other_support),
+    ": ",
+    100
+    * len(misclassified_with_same_color_as_other_support)
+    / len(with_same_color_as_other_support),
+    "%",
 )
 # %%

@@ -1,11 +1,11 @@
-import torch
-from torch import nn
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
+import torch
 from torch.utils.data import DataLoader
-from src.style_transfer.fast_photo_style import FastPhotoStyle
-from src.config import ROOT_FOLDER
 from statistics import mean, stdev
+
+from src.style_transfer.fast_photo_style import FastPhotoStyle
 
 
 class EvaluatorFewShotClassifier:
@@ -75,27 +75,23 @@ class EvaluatorFewShotClassifierWColor:
         support_images: torch.Tensor,
         support_labels: torch.Tensor,
         query_images: torch.Tensor,
-        query_labels: torch.Tensor,
-    ) -> [int, int]:
+    ) -> torch.Tensor:
         """
         Returns the number of correct predictions of query labels, and the total number of predictions.
         """
         self.few_shot_model.process_support_set(
             support_images.cuda(), support_labels.cuda()
         )
-        return (
-            torch.max(
-                self.few_shot_model(query_images.cuda()).detach().data,
-                1,
-            )[1]
-            == query_labels.cuda()
-        ).sum().item(), len(query_labels)
+        return torch.max(
+            self.few_shot_model(query_images.cuda()).detach().data,
+            1,
+        )[1]
 
     def evaluate(
         self, data_loader: DataLoader, style_transfer_augmentation: bool = False
-    ):
+    ) -> pd.DataFrame:
         accuracy = []
-
+        job_result_list = []
         # eval mode affects the behaviour of some layers (such as batch normalization or dropout)
         # no_grad() tells torch not to keep in memory the whole computational graph (it's more lightweight this way)
         self.few_shot_model.eval()
@@ -116,11 +112,25 @@ class EvaluatorFewShotClassifierWColor:
                     ) = FastPhotoStyle().augment_support_set(
                         support_images, support_labels
                     )
-                correct, total = self.evaluate_on_one_task(
-                    support_images, support_labels, query_images, query_labels
+                prediction = self.evaluate_on_one_task(
+                    support_images, support_labels, query_images
                 )
+                correct = prediction.sum().item()
+                total = len(query_labels)
                 accuracy.append(100 * correct / total)
-
+                job_result_list.append(
+                    pd.DataFrame(
+                        {
+                            "task_id": episode_index,
+                            "true_label": query_labels,
+                            "predicted_label": prediction.tolist(),
+                            "color": query_colors,
+                            "support_set_1_color": support_colors[0],
+                            "support_set_2_color": support_colors[1],
+                        }
+                    )
+                )
         print(
             f"Model tested on {len(data_loader)} tasks. Accuracy: {mean(accuracy):.2f}% +/- {(1.96*stdev(accuracy)/np.sqrt(len(accuracy))):.2f}"
         )
+        return pd.concat(job_result_list, ignore_index=True)

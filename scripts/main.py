@@ -1,7 +1,9 @@
 from pathlib import Path
+from datetime import datetime
 import argparse
 from torch.utils.data import DataLoader
 from torch import nn
+from torchvision import transforms
 from torchvision.models import resnet18
 
 from easyfsl.utils import plot_images
@@ -33,23 +35,39 @@ parser.add_argument(
     type=bool,
     help="Whether or not you want to augment the support sets with style transfer",
 )
+parser.add_argument(
+    "-s",
+    "--save_results",
+    default=False,
+    type=bool,
+    help="Whether or not you want to save the results as a csv",
+)
 args = parser.parse_args()
 N_TASKS = args.task_number
 
 ROOT = Path("data/abo_dataset/images/small")
-IMAGE_SIZE = 112
+IMAGE_SIZE = 256
 N_WAY = 2  # Number of classes in a task
 N_SHOT = 1  # Number of images per class in the support set
 N_QUERY = 16  # Number of images per class in the query set
 
 dataset = ABO(
     root=ROOT,
+    transform=transforms.Compose(
+        [
+            transforms.Pad(IMAGE_SIZE, fill=255),
+            transforms.CenterCrop(IMAGE_SIZE),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+        ]
+    ),
     classes_json=Path("data/selected_and_matched_abo_classes.json"),
     colors_json=Path("data/selected_and_removed_colors.json"),
 )
 
 if args.color_aware:
     test_sampler = ColorAwareTaskSampler(dataset, n_query=N_QUERY, n_tasks=N_TASKS)
+    print("--Color Task Sampler used")
 else:
     test_sampler = NonColorAwareTaskSampler(dataset, n_query=N_QUERY, n_tasks=N_TASKS)
 
@@ -68,7 +86,13 @@ if args.style_transfer_augmentation:
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
         test_loader, style_transfer_augmentation=True
     )
+    print("--Style transfer augmented support sets")
 else:
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
         test_loader, style_transfer_augmentation=False
+    )
+
+if args.save_results:
+    classified_dataset.to_csv(
+        "exp_results/exp_" + datetime.now().strftime("%d:%m:%Y_%H:%M:%S") + ".csv"
     )

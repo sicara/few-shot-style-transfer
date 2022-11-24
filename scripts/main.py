@@ -1,6 +1,6 @@
 from pathlib import Path
+import typer
 from datetime import datetime
-import argparse
 from torch.utils.data import DataLoader
 from torch import nn
 from torchvision import transforms
@@ -13,86 +13,71 @@ from src.abo import ABO
 from src.task_sampling_with_color import ColorAwareTaskSampler, NonColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-n-tasks",
-    "--task_number",
-    default=100,
-    type=int,
-    help="Number of few-shot tasks to do",
-)
-parser.add_argument(
-    "-color",
-    "--color_aware",
-    default=False,
-    type=bool,
-    help="Whether or not you want to build tasks knowing the colors",
-)
-parser.add_argument(
-    "-style",
-    "--style_transfer_augmentation",
-    default=False,
-    type=bool,
-    help="Whether or not you want to augment the support sets with style transfer",
-)
-parser.add_argument(
-    "-s",
-    "--save_results",
-    default=False,
-    type=bool,
-    help="Whether or not you want to save the results as a csv",
-)
-args = parser.parse_args()
-N_TASKS = args.task_number
 
-ROOT = Path("data/abo_dataset/images/small")
-IMAGE_SIZE = 256
-N_WAY = 2  # Number of classes in a task
-N_SHOT = 1  # Number of images per class in the support set
-N_QUERY = 16  # Number of images per class in the query set
+def main(
+    number_of_tasks: int = 100,
+    color_aware: bool = False,
+    style_transfer_augmentation: bool = False,
+    save_results: bool = True,
+):
+    """_summary_
 
-dataset = ABO(
-    root=ROOT,
-    transform=transforms.Compose(
-        [
-            transforms.Pad(IMAGE_SIZE, fill=255),
-            transforms.CenterCrop(IMAGE_SIZE),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-        ]
-    ),
-    classes_json=Path("data/selected_and_matched_abo_classes.json"),
-    colors_json=Path("data/selected_and_removed_colors.json"),
-)
+    Args:
+        number_of_tasks (int, optional): Number of few-shot tasks to do. Defaults to 100.
+        color_aware (bool, optional): Whether or not you want to build tasks knowing the colors. Defaults to False.
+        style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
+        save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
+    """
+    root = Path("data/abo_dataset/images/small")
+    image_size = 256
+    n_query = 16  # Number of images per class in the query set
 
-if args.color_aware:
-    test_sampler = ColorAwareTaskSampler(dataset, n_query=N_QUERY, n_tasks=N_TASKS)
-    print("--Color Task Sampler used")
-else:
-    test_sampler = NonColorAwareTaskSampler(dataset, n_query=N_QUERY, n_tasks=N_TASKS)
+    dataset = ABO(
+        root=root,
+        transform=transforms.Compose(
+            [
+                transforms.Pad(image_size, fill=255),
+                transforms.CenterCrop(image_size),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+            ]
+        ),
+        classes_json=Path("data/selected_and_matched_abo_classes.json"),
+        colors_json=Path("data/selected_and_removed_colors.json"),
+    )
 
-test_loader = DataLoader(
-    dataset,
-    batch_sampler=test_sampler,
-    num_workers=12,
-    pin_memory=True,
-    collate_fn=test_sampler.episodic_collate_fn,
-)
+    if color_aware:
+        test_sampler = ColorAwareTaskSampler(
+            dataset, n_query=n_query, n_tasks=number_of_tasks
+        )
+        print("--Color Task Sampler used")
+    else:
+        test_sampler = NonColorAwareTaskSampler(
+            dataset, n_query=n_query, n_tasks=number_of_tasks
+        )
 
-convolutional_network = resnet18(pretrained=True)
-convolutional_network.fc = nn.Flatten()
-few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
-if args.style_transfer_augmentation:
+    test_loader = DataLoader(
+        dataset,
+        batch_sampler=test_sampler,
+        num_workers=12,
+        pin_memory=True,
+        collate_fn=test_sampler.episodic_collate_fn,
+    )
+
+    convolutional_network = resnet18(pretrained=True)
+    convolutional_network.fc = nn.Flatten()
+    few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
-        test_loader, style_transfer_augmentation=True
+        test_loader, style_transfer_augmentation=style_transfer_augmentation
     )
-    print("--Style transfer augmented support sets")
-else:
-    classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
-        test_loader, style_transfer_augmentation=False
-    )
+    if style_transfer_augmentation:
+        print("--Style transfer augmented support sets")
 
-if args.save_results:
-    classified_dataset.to_csv(
-        "exp_results/exp_" + datetime.now().strftime("%d:%m:%Y_%H:%M:%S") + ".csv"
-    )
+    if save_results:
+        classified_dataset.to_csv(
+            "exp_results/exp_" + datetime.now().strftime("%d:%m:%Y_%H:%M:%S") + ".csv"
+        )
+
+
+if __name__ == "__main__":
+    typer.run(main)

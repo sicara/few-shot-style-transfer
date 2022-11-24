@@ -1,5 +1,6 @@
 from pathlib import Path
 import typer
+import time
 from datetime import datetime
 from torch.utils.data import DataLoader
 from torch import nn
@@ -28,6 +29,7 @@ def main(
         style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
     """
+    start_time = time.time()
     root = Path("data/abo_dataset/images/small")
     image_size = 112
     n_query = 16  # Number of images per class in the query set
@@ -84,6 +86,7 @@ def main(
             + datetime.now().strftime("%d:%m:%Y_%H:%M:%S")
             + ".csv"
         )
+    print("Execution time: ", round(time.time() - start_time, 2), "s")
 
 
 if __name__ == "__main__":

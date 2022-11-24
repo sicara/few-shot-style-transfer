@@ -29,16 +29,16 @@ def main(
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
     """
     root = Path("data/abo_dataset/images/small")
-    image_size = 256
+    image_size = 112
     n_query = 16  # Number of images per class in the query set
 
     dataset = ABO(
         root=root,
         transform=transforms.Compose(
             [
-                transforms.Pad(image_size, fill=255),
-                transforms.CenterCrop(image_size),
-                transforms.RandomHorizontalFlip(),
+                transforms.Pad(256, fill=255),
+                transforms.CenterCrop(256),
+                transforms.Resize(image_size),
                 transforms.ToTensor(),
             ]
         ),

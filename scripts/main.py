@@ -31,7 +31,7 @@ def main(
     root = Path("data/abo_dataset/images/small")
     image_size = 112
     n_query = 16  # Number of images per class in the query set
-
+    message = ""
     dataset = ABO(
         root=root,
         transform=transforms.Compose(
@@ -51,6 +51,7 @@ def main(
             dataset, n_query=n_query, n_tasks=number_of_tasks
         )
         print("--Color Task Sampler used")
+        message += "color_"
     else:
         test_sampler = NonColorAwareTaskSampler(
             dataset, n_query=n_query, n_tasks=number_of_tasks
@@ -72,10 +73,16 @@ def main(
     )
     if style_transfer_augmentation:
         print("--Style transfer augmented support sets")
+        message += "style_"
 
     if save_results:
         classified_dataset.to_csv(
-            "exp_results/exp_" + datetime.now().strftime("%d:%m:%Y_%H:%M:%S") + ".csv"
+            "exp_results/exp_"
+            + str(number_of_tasks)
+            + "_"
+            + message
+            + datetime.now().strftime("%d:%m:%Y_%H:%M:%S")
+            + ".csv"
         )
 
 

@@ -78,9 +78,10 @@ class ABO(FewShotDataset):
                 data_product_type_count["count"] < min_number_item_per_class
             ]["product_type"]
         )
-        logger.info(
-            f"Removed classes {removed_classes} because they had less than {str(min_number_item_per_class)} elements."
-        )
+        if len(removed_classes) > 0:
+            logger.info(
+                f"Removed classes {removed_classes} because they had less than {str(min_number_item_per_class)} elements."
+            )
         data = data[data.product_type.isin(class_names)].reset_index()
 
         label_mapping = {name: class_names.index(name) for name in class_names}

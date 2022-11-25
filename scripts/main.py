@@ -21,13 +21,14 @@ def main(
     style_transfer_augmentation: bool = False,
     save_results: bool = True,
 ):
-    """_summary_
+    """Inference script for one-shot two-way image classification
 
     Args:
         number_of_tasks (int, optional): Number of few-shot tasks to do. Defaults to 100.
         color_aware (bool, optional): Whether or not you want to build tasks knowing the colors. Defaults to False.
         style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
+
     """
     start_time = time.time()
     root = Path("data/abo_dataset/images/small")

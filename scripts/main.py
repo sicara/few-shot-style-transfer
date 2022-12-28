@@ -111,6 +111,7 @@ def main(
             classified_dataset
         ),
     )
+    print("-------------------------------------------------")
 
 
 if __name__ == "__main__":

@@ -125,8 +125,8 @@ class EvaluatorFewShotClassifierWColor:
                             "true_label": query_labels,
                             "predicted_label": prediction.tolist(),
                             "color": query_colors,
-                            "support_set_1_color": support_colors[0],
-                            "support_set_2_color": support_colors[1],
+                            "support_set_0_color": support_colors[0],
+                            "support_set_1_color": support_colors[1],
                         }
                     )
                 )

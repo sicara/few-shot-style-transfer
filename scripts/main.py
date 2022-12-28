@@ -11,6 +11,11 @@ from easyfsl.utils import plot_images
 from easyfsl.methods.prototypical_networks import PrototypicalNetworks
 
 from src.abo import ABO
+from src.evaluator_utils import (
+    compute_accuracy_for_samples_with_same_color_as_class_representative,
+    compute_accuracy_for_samples_with_same_color_as_no_class_representative,
+    compute_accuracy_for_samples_with_same_color_as_other_class_representative,
+)
 from src.task_sampling_with_color import ColorAwareTaskSampler, NonColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
@@ -88,6 +93,24 @@ def main(
             + ".csv"
         )
     print("Execution time: ", round(time.time() - start_time, 2), "s")
+    print(
+        "Accuracy for samples with same color as class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_class_representative(
+            classified_dataset
+        ),
+    )
+    print(
+        "Accuracy for samples with same color as other class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_other_class_representative(
+            classified_dataset
+        ),
+    )
+    print(
+        "Accuracy for samples with same color as none of the class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_no_class_representative(
+            classified_dataset
+        ),
+    )
 
 
 if __name__ == "__main__":

@@ -115,7 +115,7 @@ class EvaluatorFewShotClassifierWColor:
                 prediction = self.evaluate_on_one_task(
                     support_images, support_labels, query_images
                 )
-                correct = prediction.sum().item()
+                correct = (prediction == query_labels.cuda()).sum().item()
                 total = len(query_labels)
                 accuracy.append(100 * correct / total)
                 job_result_list.append(

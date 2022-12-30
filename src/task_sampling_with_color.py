@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Iterator, Tuple
+from typing import List, Iterator, Tuple, Union
 import torch
 from torch import Tensor
 import random
@@ -7,13 +7,14 @@ import pandas as pd
 
 from easyfsl.samplers.task_sampler import TaskSampler
 from src.abo import ABO
+from src.cub import CUB
 
 
 class TaskSamplerWithColor(TaskSampler):
     @abstractmethod
     def __init__(
         self,
-        dataset: ABO,
+        dataset: Union[ABO, CUB],
         n_query: int,
         n_tasks: int,
     ):
@@ -116,7 +117,7 @@ class ColorAwareTaskSampler(TaskSamplerWithColor):
 
     def __init__(
         self,
-        dataset: ABO,
+        dataset: Union[ABO, CUB],
         n_query: int,
         n_tasks: int,
     ):
@@ -201,7 +202,7 @@ class NonColorAwareTaskSampler(TaskSamplerWithColor):
 
     def __init__(
         self,
-        dataset: ABO,
+        dataset: Union[ABO, CUB],
         n_query: int,
         n_tasks: int,
     ):

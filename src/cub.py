@@ -34,7 +34,7 @@ class CUB(FewShotDataset):
             Image.open(self.root / self.data.path[item]).convert("RGB")
         )
         label = self.data.class_id[item]
-        color = self.data.color_attribute_id[item]
+        color = self.data.annotated_attribute_id[item]
 
         return img, label, color
 
@@ -42,7 +42,7 @@ class CUB(FewShotDataset):
         return self.data.class_id[item]
 
     def get_item_color(self, item: int) -> str:
-        return self.data.color[item]
+        return self.data.annotated_attribute_id[item]
 
     def __len__(self) -> int:
         return len(self.data)
@@ -51,4 +51,4 @@ class CUB(FewShotDataset):
         return list(self.data.class_id)
 
     def get_colors(self) -> List[str]:
-        return list(self.data.color)
+        return list(self.data.annotated_attribute_id)

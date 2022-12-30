@@ -93,12 +93,7 @@ def main(
 
     if save_results:
         classified_dataset.to_csv(
-            "exp_results/exp_"
-            + str(number_of_tasks)
-            + "_"
-            + message
-            + datetime.now().strftime("%d:%m:%Y_%H:%M:%S")
-            + ".csv"
+            f"exp_results/exp_{number_of_tasks}_{dataset_used}_{message}{datetime.now().strftime('%d:%m:%Y_%H:%M:%S')}.csv"
         )
     print("Execution time: ", round(time.time() - start_time, 2), "s")
     print(

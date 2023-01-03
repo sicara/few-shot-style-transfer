@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 import typer
 import time
 from datetime import datetime
@@ -42,6 +43,7 @@ def main(
     image_size = 112
     n_query = 16  # Number of images per class in the query set
     message = ""
+    random.seed(1)
     transform = transforms.Compose(
         [
             transforms.Pad(256, fill=255),

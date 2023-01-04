@@ -12,7 +12,7 @@ class BasicDataAugmentation:
         cropping: bool = True,
         flipping: bool = True,
         color_jiter: bool = True,
-        solarize: bool = True,
+        solarize: bool = False,
         image_size: int = 112,
     ):
         """

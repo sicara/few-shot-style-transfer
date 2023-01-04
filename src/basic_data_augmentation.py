@@ -26,6 +26,7 @@ class BasicDataAugmentation:
             image_size: the image size. Defaults to 112.
         """
         random.seed(1)
+        torch.manual_seed(1)
         self.transforms_dict = {
             "rotation": [transforms.RandomRotation((20, 340)), rotation],
             "deformation": [transforms.RandomPerspective(p=1), deformation],

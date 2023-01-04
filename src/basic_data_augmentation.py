@@ -15,6 +15,16 @@ class BasicDataAugmentation:
         solarize: bool = True,
         image_size: int = 112,
     ):
+        """
+        Args:
+            rotation: whether or not to apply rotation. Defaults to True.
+            deformation: whether or not to apply perspective deformation. Defaults to True.
+            cropping: whether or not to apply cropping. Defaults to True.
+            flipping: whether or not to apply flipping. Defaults to True.
+            color_jiter: whether or not to apply color jiter. Defaults to True.
+            solarize: whether or not to apply solarize transformation. Defaults to True.
+            image_size: the image size. Defaults to 112.
+        """
         self.transforms_dict = {
             "rotation": [transforms.RandomRotation((20, 340)), rotation],
             "deformation": [transforms.RandomPerspective(p=1), deformation],
@@ -41,6 +51,9 @@ class BasicDataAugmentation:
         }
 
     def image_augmentation(self, image: torch.Tensor):
+        """
+        Augment a given image by creating new images with each of the transforms available
+        """
         transform_list = [
             transform_item[0]
             for transform_item in self.transforms_dict.values()
@@ -59,6 +72,15 @@ class BasicDataAugmentation:
     def augment_support_set(
         self, support_images: torch.Tensor, support_labels: torch.Tensor
     ):
+        """
+        Args:
+            support_images: tensor containing the images of one task
+            support_labels: tensor containing the labels for one task
+
+        Returns:
+            augmented_support_images: tensor containing the augmented support images for one task
+            augmented_support_labels: tensor containing the augmented support labels for one task
+        """
         augmented_support_images = support_images.detach().clone()
         augmented_support_labels = support_labels.detach().clone()
 
@@ -70,7 +92,7 @@ class BasicDataAugmentation:
             ]
         )
         for img_id, img in tqdm(
-            enumerate(support_images), desc="Support set augmentation"
+            enumerate(support_images), desc="Basic support set augmentation"
         ):
             augmented_support_images = torch.cat(
                 (augmented_support_images, self.image_augmentation(img)), 0

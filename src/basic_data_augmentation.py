@@ -93,9 +93,7 @@ class BasicDataAugmentation:
                 if transform_item[1]
             ]
         )
-        for img_id, img in tqdm(
-            enumerate(support_images), desc="Basic support set augmentation"
-        ):
+        for img_id, img in enumerate(support_images):
             augmented_support_images = torch.cat(
                 (augmented_support_images, self.image_augmentation(img)), 0
             )

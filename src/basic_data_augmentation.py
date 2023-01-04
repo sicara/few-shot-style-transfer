@@ -47,7 +47,7 @@ class BasicDataAugmentation:
                 flipping,
             ],
             "color_jiter": [transforms.ColorJitter(0.5, 0.5, 0.5), color_jiter],
-            "solarize": [transforms.RandomSolarize(0.5, p=1), solarize],
+            # "solarize": [transforms.RandomSolarize(0.5, p=1), solarize],
         }
 
     def image_augmentation(self, image: torch.Tensor):

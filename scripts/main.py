@@ -1,4 +1,5 @@
 from pathlib import Path
+import random
 import typer
 import time
 from datetime import datetime
@@ -11,6 +12,12 @@ from easyfsl.utils import plot_images
 from easyfsl.methods.prototypical_networks import PrototypicalNetworks
 
 from src.abo import ABO
+from src.cub import CUB
+from src.evaluator_utils import (
+    compute_accuracy_for_samples_with_same_color_as_class_representative,
+    compute_accuracy_for_samples_with_same_color_as_no_class_representative,
+    compute_accuracy_for_samples_with_same_color_as_other_class_representative,
+)
 from src.task_sampling_with_color import ColorAwareTaskSampler, NonColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
@@ -19,6 +26,7 @@ def main(
     number_of_tasks: int = 100,
     color_aware: bool = False,
     style_transfer_augmentation: bool = False,
+    dataset_used: str = "abo",
     save_results: bool = True,
 ):
     """Inference script for one-shot two-way image classification
@@ -27,27 +35,36 @@ def main(
         number_of_tasks (int, optional): Number of few-shot tasks to do. Defaults to 100.
         color_aware (bool, optional): Whether or not you want to build tasks knowing the colors. Defaults to False.
         style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
+        dataset_used (str, optional): The dataset used, either 'abo' or 'cub'. Defaults to 'abo'.
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
 
     """
     start_time = time.time()
-    root = Path("data/abo_dataset/images/small")
     image_size = 112
     n_query = 16  # Number of images per class in the query set
     message = ""
-    dataset = ABO(
-        root=root,
-        transform=transforms.Compose(
-            [
-                transforms.Pad(256, fill=255),
-                transforms.CenterCrop(256),
-                transforms.Resize(image_size),
-                transforms.ToTensor(),
-            ]
-        ),
-        classes_json=Path("data/selected_and_matched_abo_classes.json"),
-        colors_json=Path("data/selected_and_removed_colors.json"),
+    random.seed(1)
+    transform = transforms.Compose(
+        [
+            transforms.Pad(256, fill=255),
+            transforms.CenterCrop(256),
+            transforms.Resize(image_size),
+            transforms.ToTensor(),
+        ]
     )
+    if dataset_used == "cub":
+        root = Path("data/cub_dataset/images")
+        dataset = CUB(root=root, transform=transform)
+    elif dataset_used == "abo":
+        root = Path("data/abo_dataset/images/small")
+        dataset = ABO(
+            root=root,
+            transform=transform,
+            classes_json=Path("data/selected_and_matched_abo_classes.json"),
+            colors_json=Path("data/selected_and_removed_colors.json"),
+        )
+    else:
+        raise ValueError("Invalid dataset input")
 
     if color_aware:
         test_sampler = ColorAwareTaskSampler(
@@ -80,14 +97,30 @@ def main(
 
     if save_results:
         classified_dataset.to_csv(
-            "exp_results/exp_"
-            + str(number_of_tasks)
-            + "_"
-            + message
-            + datetime.now().strftime("%d:%m:%Y_%H:%M:%S")
-            + ".csv"
+            f"exp_results/"
+            f"exp_{number_of_tasks}_{dataset_used}_{message}"
+            f"{datetime.now().strftime('%d:%m:%Y_%H:%M:%S')}.csv"
         )
     print("Execution time: ", round(time.time() - start_time, 2), "s")
+    print(
+        "Accuracy for samples with same color as class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_class_representative(
+            classified_dataset
+        ),
+    )
+    print(
+        "Accuracy for samples with same color as other class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_other_class_representative(
+            classified_dataset
+        ),
+    )
+    print(
+        "Accuracy for samples with same color as none of the class representative: ",
+        compute_accuracy_for_samples_with_same_color_as_no_class_representative(
+            classified_dataset
+        ),
+    )
+    print("-------------------------------------------------")
 
 
 if __name__ == "__main__":

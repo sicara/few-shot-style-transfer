@@ -69,6 +69,7 @@ Options:
  --color-aware / --no-color-aware     [default: no-color-aware]
  --style-transfer-augmentation / --no-style-transfer-augmentation
                                       [default: no-style-transfer-augmentation]
+ --dataset-used TEXT                   [default: abo]
  --save-results / --no-save-results   [default: save-results]
  --help                          Show help message and exit.
 

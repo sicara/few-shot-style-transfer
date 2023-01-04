@@ -26,6 +26,7 @@ def main(
     number_of_tasks: int = 100,
     color_aware: bool = False,
     style_transfer_augmentation: bool = False,
+    basic_augmentation: bool = False,
     dataset_used: str = "abo",
     save_results: bool = True,
 ):
@@ -89,11 +90,16 @@ def main(
     convolutional_network.fc = nn.Flatten()
     few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
-        test_loader, style_transfer_augmentation=style_transfer_augmentation
+        test_loader,
+        style_transfer_augmentation=style_transfer_augmentation,
+        basic_augmentation=basic_augmentation,
     )
     if style_transfer_augmentation:
         print("--Style transfer augmented support sets")
         message += "style_"
+    if basic_augmentation:
+        print("--Basic transforms augmented support sets")
+        message += "basic_aug"
 
     if save_results:
         classified_dataset.to_csv(

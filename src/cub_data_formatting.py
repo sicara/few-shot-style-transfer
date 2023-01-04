@@ -4,6 +4,10 @@ from typing import Union
 
 from src.config import ROOT_FOLDER
 
+PRIMARY_COLOR_ATTRIBUTE_ID = (249, 263)
+ANNOTATION_CERTAINTY_THRESHOLD = 3
+ANNOTATION_PRESENCE = 1
+
 
 class CUBFormatting:
     def __init__(self, path_to_cub_dataset_folder: Union[Path, str]):
@@ -46,7 +50,7 @@ class CUBFormatting:
     def read_and_format_classes_attributes_data(self):
         self.class_atributes_df = pd.read_csv(
             self.path_to_cub_dataset_folder
-            / Path("attributes/class_attribute_labels_continuous.txt"),
+            / "attributes/class_attribute_labels_continuous.txt",
             sep=" ",
             header=None,
             names=[str(i) for i in range(1, 313)],
@@ -56,7 +60,12 @@ class CUBFormatting:
             lambda row: int(row.class_id + 1), axis=1
         )
         self.class_atributes_df["color_attribute_id"] = self.class_atributes_df[
-            [str(i) for i in range(249, 264)]
+            [
+                str(i)
+                for i in range(
+                    PRIMARY_COLOR_ATTRIBUTE_ID[0], PRIMARY_COLOR_ATTRIBUTE_ID[1] + 1
+                )
+            ]
         ].idxmax(axis=1)
 
     def read_and_format_attributes_data(self):
@@ -96,10 +105,19 @@ class CUBFormatting:
         )
         self.image_annotation_df = (
             self.image_annotation_df[
-                (self.image_annotation_df["annotated_attribute_id"] >= 249)
-                & (self.image_annotation_df["annotated_attribute_id"] <= 263)
-                & (self.image_annotation_df["certainty"] >= 3)
-                & (self.image_annotation_df["is_present"] == 1)
+                (
+                    self.image_annotation_df["annotated_attribute_id"]
+                    >= PRIMARY_COLOR_ATTRIBUTE_ID[0]
+                )
+                & (
+                    self.image_annotation_df["annotated_attribute_id"]
+                    <= PRIMARY_COLOR_ATTRIBUTE_ID[1]
+                )
+                & (
+                    self.image_annotation_df["certainty"]
+                    >= ANNOTATION_CERTAINTY_THRESHOLD
+                )
+                & (self.image_annotation_df["is_present"] == ANNOTATION_PRESENCE)
             ]
             .groupby("image_id")
             .first()

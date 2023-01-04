@@ -105,6 +105,14 @@ def compute_accuracy_for_samples_with_same_color_as_no_class_representative(
 
 
 def compute_task_color_similarity(query_results: pd.DataFrame, task_id: int) -> float:
+    """Compute a color similarity index of a task in percent. It adds to the mean 50%,
+    the percentage of samples with the same color as their class representative;
+    and subtracts the percentage of samples with the same color as another class representative.
+    Higher the index is, more the samples are similar to their class representative.
+    Args:
+        query_results: the dataframe gathering the results of the classification
+        task_id: the task ID for which we want to compute the index
+    """
     task_query_results = query_results[(query_results["task_id"] == task_id)]
     return (
         0.5

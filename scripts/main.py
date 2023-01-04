@@ -55,7 +55,7 @@ def main(
     if dataset_used == "cub":
         root = Path("data/cub_dataset/images")
         dataset = CUB(root=root, transform=transform)
-    else:
+    elif dataset_used == "abo":
         root = Path("data/abo_dataset/images/small")
         dataset = ABO(
             root=root,
@@ -63,6 +63,8 @@ def main(
             classes_json=Path("data/selected_and_matched_abo_classes.json"),
             colors_json=Path("data/selected_and_removed_colors.json"),
         )
+    else:
+        raise ValueError("Invalid dataset input")
 
     if color_aware:
         test_sampler = ColorAwareTaskSampler(
@@ -95,7 +97,9 @@ def main(
 
     if save_results:
         classified_dataset.to_csv(
-            f"exp_results/exp_{number_of_tasks}_{dataset_used}_{message}{datetime.now().strftime('%d:%m:%Y_%H:%M:%S')}.csv"
+            f"exp_results/"
+            f"exp_{number_of_tasks}_{dataset_used}_{message}"
+            f"{datetime.now().strftime('%d:%m:%Y_%H:%M:%S')}.csv"
         )
     print("Execution time: ", round(time.time() - start_time, 2), "s")
     print(

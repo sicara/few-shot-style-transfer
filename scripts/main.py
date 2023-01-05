@@ -101,7 +101,7 @@ def main(
         message += "style_"
     if basic_augmentation:
         print("--Basic transforms augmented support sets")
-        message += "basic_aug"
+        message += "basic_aug_"
 
     if save_results:
         classified_dataset.to_csv(

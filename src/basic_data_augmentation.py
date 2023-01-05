@@ -95,7 +95,6 @@ class BasicDataAugmentation:
             augmented_support_labels += [support_labels[img_id]] * (
                 len(self.transforms_list) + 1
             )
-        print(len(augmented_support_labels))
         return torch.stack(augmented_support_images), torch.stack(
             augmented_support_labels
         )

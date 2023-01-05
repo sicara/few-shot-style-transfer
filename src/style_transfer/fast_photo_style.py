@@ -72,9 +72,7 @@ class FastPhotoStyle:
         augmented_support_images = support_images.detach().clone()
         augmented_support_labels = support_labels.detach().clone()
 
-        for content_img_id, content_img in tqdm(
-            enumerate(support_images), desc="Support set augmentation"
-        ):
+        for content_img_id, content_img in enumerate(support_images):
             for style_img_id, style_img in enumerate(support_images):
                 if content_img_id != style_img_id:
                     new_img = transforms.ToTensor()(

@@ -4,6 +4,7 @@ from tqdm import tqdm
 import torch
 from torch.utils.data import DataLoader
 from statistics import mean, stdev
+from src.basic_data_augmentation import BasicDataAugmentation
 
 from src.style_transfer.fast_photo_style import FastPhotoStyle
 
@@ -34,7 +35,10 @@ class EvaluatorFewShotClassifier:
         ).sum().item(), len(query_labels)
 
     def evaluate(
-        self, data_loader: DataLoader, style_transfer_augmentation: bool = False
+        self,
+        data_loader: DataLoader,
+        style_transfer_augmentation: bool = False,
+        basic_augmentation: bool = False,
     ):
         accuracy = []
 
@@ -54,6 +58,13 @@ class EvaluatorFewShotClassifier:
                         support_images,
                         support_labels,
                     ) = FastPhotoStyle().augment_support_set(
+                        support_images, support_labels
+                    )
+                if basic_augmentation:
+                    (
+                        support_images,
+                        support_labels,
+                    ) = BasicDataAugmentation().augment_support_set(
                         support_images, support_labels
                     )
                 correct, total = self.evaluate_on_one_task(
@@ -88,7 +99,10 @@ class EvaluatorFewShotClassifierWColor:
         )[1]
 
     def evaluate(
-        self, data_loader: DataLoader, style_transfer_augmentation: bool = False
+        self,
+        data_loader: DataLoader,
+        style_transfer_augmentation: bool = False,
+        basic_augmentation: bool = False,
     ) -> pd.DataFrame:
         accuracy = []
         job_result_list = []
@@ -110,6 +124,13 @@ class EvaluatorFewShotClassifierWColor:
                         support_images,
                         support_labels,
                     ) = FastPhotoStyle().augment_support_set(
+                        support_images, support_labels
+                    )
+                if basic_augmentation:
+                    (
+                        support_images,
+                        support_labels,
+                    ) = BasicDataAugmentation().augment_support_set(
                         support_images, support_labels
                     )
                 prediction = self.evaluate_on_one_task(

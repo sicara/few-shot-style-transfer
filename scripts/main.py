@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from torch.utils.data import DataLoader
 from torch import nn
+import torch
 from torchvision import transforms
 from torchvision.models import resnet18
 
@@ -26,6 +27,7 @@ def main(
     number_of_tasks: int = 100,
     color_aware: bool = False,
     style_transfer_augmentation: bool = False,
+    basic_augmentation: bool = False,
     dataset_used: str = "abo",
     save_results: bool = True,
 ):
@@ -44,6 +46,7 @@ def main(
     n_query = 16  # Number of images per class in the query set
     message = ""
     random.seed(1)
+    torch.manual_seed(1)
     transform = transforms.Compose(
         [
             transforms.Pad(256, fill=255),
@@ -89,11 +92,16 @@ def main(
     convolutional_network.fc = nn.Flatten()
     few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
-        test_loader, style_transfer_augmentation=style_transfer_augmentation
+        test_loader,
+        style_transfer_augmentation=style_transfer_augmentation,
+        basic_augmentation=basic_augmentation,
     )
     if style_transfer_augmentation:
         print("--Style transfer augmented support sets")
         message += "style_"
+    if basic_augmentation:
+        print("--Basic transforms augmented support sets")
+        message += "basic_aug_"
 
     if save_results:
         classified_dataset.to_csv(

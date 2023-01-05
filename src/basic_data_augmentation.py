@@ -1,6 +1,5 @@
 import torch
 from torchvision import transforms
-from tqdm import tqdm
 import random
 
 
@@ -12,7 +11,7 @@ class BasicDataAugmentation:
         cropping: bool = True,
         flipping: bool = True,
         color_jiter: bool = True,
-        solarize: bool = False,
+        solarize: bool = True,
         image_size: int = 112,
     ):
         """
@@ -25,50 +24,56 @@ class BasicDataAugmentation:
             solarize: whether or not to apply solarize transformation. Defaults to True.
             image_size: the image size. Defaults to 112.
         """
-        random.seed(1)
-        torch.manual_seed(1)
-        self.transforms_dict = {
-            "rotation": [transforms.RandomRotation((20, 340)), rotation],
-            "deformation": [transforms.RandomPerspective(p=1), deformation],
-            "cropping": [
+        self.transforms_list = self.select_transforms(
+            rotation, deformation, cropping, flipping, color_jiter, solarize, image_size
+        )
+
+    @staticmethod
+    def select_transforms(
+        rotation: bool,
+        deformation: bool,
+        cropping: bool,
+        flipping: bool,
+        color_jiter: bool,
+        solarize: bool,
+        image_size: int,
+    ):
+        transforms_list = []
+        if rotation:
+            transforms_list.append(transforms.RandomRotation((20, 340)))
+        if deformation:
+            transforms_list.append(transforms.RandomPerspective(p=1))
+        if cropping:
+            transforms_list.append(
                 transforms.Compose(
                     [
                         transforms.RandomCrop(image_size / 2),
                         transforms.Resize(image_size),
                     ]
-                ),
-                cropping,
-            ],
-            "flipping": [
+                )
+            )
+        if flipping:
+            transforms_list.append(
                 random.choice(
                     [
                         transforms.RandomHorizontalFlip(1),
                         transforms.RandomVerticalFlip(1),
                     ]
-                ),
-                flipping,
-            ],
-            "color_jiter": [transforms.ColorJitter(0.5, 0.5, 0.5), color_jiter],
-            # "solarize": [transforms.RandomSolarize(0.5, p=1), solarize],
-        }
+                )
+            )
+        if color_jiter:
+            transforms_list.append(transforms.ColorJitter(0.5, 0.5, 0.5))
+        if solarize:
+            transforms_list.append(transforms.RandomSolarize(0.5, p=1))
+        return transforms_list
 
     def image_augmentation(self, image: torch.Tensor):
         """
         Augment a given image by creating new images with each of the transforms available
         """
-        transform_list = [
-            transform_item[0]
-            for transform_item in self.transforms_dict.values()
-            if transform_item[1]
-        ]
-        augmented_images_from_image = None
-        for transform in transform_list:
-            if augmented_images_from_image is None:
-                augmented_images_from_image = transform(image)[None, :]
-            else:
-                augmented_images_from_image = torch.cat(
-                    (augmented_images_from_image, transform(image)[None, :]), 0
-                )
+        augmented_images_from_image = [image]
+        for transform in self.transforms_list:
+            augmented_images_from_image.append(transform(image))
         return augmented_images_from_image
 
     def augment_support_set(
@@ -83,25 +88,14 @@ class BasicDataAugmentation:
             augmented_support_images: tensor containing the augmented support images for one task
             augmented_support_labels: tensor containing the augmented support labels for one task
         """
-        augmented_support_images = support_images.detach().clone()
-        augmented_support_labels = support_labels.detach().clone()
-
-        number_of_transforms = len(
-            [
-                transform_item[0]
-                for transform_item in self.transforms_dict.values()
-                if transform_item[1]
-            ]
-        )
+        augmented_support_images = []
+        augmented_support_labels = []
         for img_id, img in enumerate(support_images):
-            augmented_support_images = torch.cat(
-                (augmented_support_images, self.image_augmentation(img)), 0
+            augmented_support_images += self.image_augmentation(img)
+            augmented_support_labels += [support_labels[img_id]] * (
+                len(self.transforms_list) + 1
             )
-            augmented_support_labels = torch.cat(
-                (
-                    augmented_support_labels,
-                    torch.tensor([support_labels[img_id]] * number_of_transforms),
-                ),
-                -1,
-            )
-        return augmented_support_images, augmented_support_labels
+        print(len(augmented_support_labels))
+        return torch.stack(augmented_support_images), torch.stack(
+            augmented_support_labels
+        )

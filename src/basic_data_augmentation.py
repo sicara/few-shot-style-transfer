@@ -40,9 +40,9 @@ class BasicDataAugmentation:
     ):
         transforms_list = []
         if rotation:
-            transforms_list.append(transforms.RandomRotation((20, 340)))
+            transforms_list.append(transforms.RandomRotation((20, 340), fill=255))
         if deformation:
-            transforms_list.append(transforms.RandomPerspective(p=1))
+            transforms_list.append(transforms.RandomPerspective(p=1, fill=255))
         if cropping:
             transforms_list.append(
                 transforms.Compose(

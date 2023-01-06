@@ -18,7 +18,7 @@ from src.evaluator_utils import (
     compute_accuracy_for_samples_with_same_color_as_no_class_representative,
     compute_accuracy_for_samples_with_same_color_as_other_class_representative,
     compute_total_accuracy,
-    compute_task_color_similarity,
+    plot_task_accuracy_and_color_similarity,
 )
 from src.style_transfer.fast_photo_style import FastPhotoStyle
 from src.basic_data_augmentation import BasicDataAugmentation
@@ -117,3 +117,5 @@ print(
 print(
     compute_accuracy_for_samples_with_same_color_as_no_class_representative(prediction)
 )
+#%%
+plot_task_accuracy_and_color_similarity(prediction)

@@ -4,8 +4,8 @@ from torchvision import transforms
 from src.constants import IMAGE_SIZE
 
 AUGMENTATION = {
-    "rotation": transforms.RandomRotation((20, 340), fill=255),
-    "deformation": transforms.RandomPerspective(p=1, fill=255),
+    "rotation": transforms.RandomRotation((20, 340)),
+    "deformation": transforms.RandomPerspective(p=1),
     "cropping": transforms.Compose(
         [
             transforms.RandomCrop(IMAGE_SIZE / 2),

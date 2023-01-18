@@ -100,7 +100,7 @@ def main(
         print("--Style transfer augmented support sets")
         message += "style_"
     if basic_data_augmentation is not None:
-        print("--Basic transforms augmented support sets")
+        print(f"--Basic transforms ({basic_data_augmentation}) augmented support sets")
         for augmentation in basic_data_augmentation.split(","):
             message += f"{augmentation}_"
 

@@ -22,17 +22,13 @@ AUGMENTATION = {
 class BasicDataAugmentation:
     def __init__(
         self,
-        augmentations: str = "rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize",
+        augmentations: str = "",
         image_size: int = 112,
     ):
         """
         Args:
-            rotation: whether or not to apply rotation. Defaults to True.
-            deformation: whether or not to apply perspective deformation. Defaults to True.
-            cropping: whether or not to apply cropping. Defaults to True.
-            flipping: whether or not to apply flipping. Defaults to True.
-            color_jiter: whether or not to apply color jiter. Defaults to True.
-            solarize: whether or not to apply solarize transformation. Defaults to True.
+            augmentations: a string defining each transformation to apply divided by a ','. The possible transforms are:
+            'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize'. Default to empty string.
             image_size: the image size. Defaults to 112.
         """
         self.transforms_list = [

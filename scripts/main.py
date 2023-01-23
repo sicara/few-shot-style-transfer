@@ -27,7 +27,7 @@ def main(
     number_of_tasks: int = 100,
     color_aware: bool = False,
     style_transfer_augmentation: bool = False,
-    basic_augmentation: bool = False,
+    basic_augmentation: str = None,
     dataset_used: str = "abo",
     save_results: bool = True,
 ):
@@ -99,9 +99,10 @@ def main(
     if style_transfer_augmentation:
         print("--Style transfer augmented support sets")
         message += "style_"
-    if basic_augmentation:
-        print("--Basic transforms augmented support sets")
-        message += "basic_aug_"
+    if basic_augmentation is not None:
+        print(f"--Basic transforms ({basic_augmentation}) augmented support sets")
+        for augmentation in basic_augmentation.split(","):
+            message += f"{augmentation}_"
 
     if save_results:
         classified_dataset.to_csv(

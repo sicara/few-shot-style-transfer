@@ -38,7 +38,7 @@ class EvaluatorFewShotClassifier:
         self,
         data_loader: DataLoader,
         style_transfer_augmentation: bool = False,
-        basic_augmentation: bool = False,
+        basic_augmentation: str = None,
     ):
         accuracy = []
 
@@ -60,13 +60,10 @@ class EvaluatorFewShotClassifier:
                     ) = FastPhotoStyle().augment_support_set(
                         support_images, support_labels
                     )
-                if basic_augmentation:
-                    (
-                        support_images,
-                        support_labels,
-                    ) = BasicDataAugmentation().augment_support_set(
-                        support_images, support_labels
-                    )
+                if basic_augmentation is not None:
+                    (support_images, support_labels,) = BasicDataAugmentation(
+                        basic_augmentation
+                    ).augment_support_set(support_images, support_labels)
                 correct, total = self.evaluate_on_one_task(
                     support_images, support_labels, query_images, query_labels
                 )
@@ -102,7 +99,7 @@ class EvaluatorFewShotClassifierWColor:
         self,
         data_loader: DataLoader,
         style_transfer_augmentation: bool = False,
-        basic_augmentation: bool = False,
+        basic_augmentation: str = None,
     ) -> pd.DataFrame:
         accuracy = []
         job_result_list = []
@@ -126,13 +123,10 @@ class EvaluatorFewShotClassifierWColor:
                     ) = FastPhotoStyle().augment_support_set(
                         support_images, support_labels
                     )
-                if basic_augmentation:
-                    (
-                        support_images,
-                        support_labels,
-                    ) = BasicDataAugmentation().augment_support_set(
-                        support_images, support_labels
-                    )
+                if basic_augmentation is not None:
+                    (support_images, support_labels,) = BasicDataAugmentation(
+                        basic_augmentation
+                    ).augment_support_set(support_images, support_labels)
                 prediction = self.evaluate_on_one_task(
                     support_images, support_labels, query_images
                 )

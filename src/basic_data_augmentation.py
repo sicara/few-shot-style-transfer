@@ -1,71 +1,40 @@
 import torch
 from torchvision import transforms
-import random
+
+from src.constants import IMAGE_SIZE
+
+AUGMENTATION = {
+    "rotation": transforms.RandomRotation((20, 340)),
+    "deformation": transforms.RandomPerspective(p=1),
+    "cropping": transforms.Compose(
+        [
+            transforms.RandomCrop(IMAGE_SIZE / 2),
+            transforms.Resize(IMAGE_SIZE),
+        ]
+    ),
+    "vertical_flipping": transforms.RandomVerticalFlip(1),
+    "horizontal_flipping": transforms.RandomHorizontalFlip(1),
+    "color_jiter": transforms.ColorJitter(0.5, 0.5, 0.5),
+    "solarize": transforms.RandomSolarize(0.5, p=1),
+}
 
 
 class BasicDataAugmentation:
     def __init__(
         self,
-        rotation: bool = True,
-        deformation: bool = True,
-        cropping: bool = True,
-        flipping: bool = True,
-        color_jiter: bool = True,
-        solarize: bool = True,
+        augmentations: str = "",
         image_size: int = 112,
     ):
         """
         Args:
-            rotation: whether or not to apply rotation. Defaults to True.
-            deformation: whether or not to apply perspective deformation. Defaults to True.
-            cropping: whether or not to apply cropping. Defaults to True.
-            flipping: whether or not to apply flipping. Defaults to True.
-            color_jiter: whether or not to apply color jiter. Defaults to True.
-            solarize: whether or not to apply solarize transformation. Defaults to True.
+            augmentations: a string defining each transformation to apply divided by a ','. The possible transforms are:
+            'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize'. Default to empty string.
             image_size: the image size. Defaults to 112.
         """
-        self.transforms_list = self.select_transforms(
-            rotation, deformation, cropping, flipping, color_jiter, solarize, image_size
-        )
-
-    @staticmethod
-    def select_transforms(
-        rotation: bool,
-        deformation: bool,
-        cropping: bool,
-        flipping: bool,
-        color_jiter: bool,
-        solarize: bool,
-        image_size: int,
-    ):
-        transforms_list = []
-        if rotation:
-            transforms_list.append(transforms.RandomRotation((20, 340), fill=255))
-        if deformation:
-            transforms_list.append(transforms.RandomPerspective(p=1, fill=255))
-        if cropping:
-            transforms_list.append(
-                transforms.Compose(
-                    [
-                        transforms.RandomCrop(image_size / 2),
-                        transforms.Resize(image_size),
-                    ]
-                )
-            )
-        if flipping:
-            transforms_list.append(
-                random.choice(
-                    [
-                        transforms.RandomHorizontalFlip(1),
-                        transforms.RandomVerticalFlip(1),
-                    ]
-                )
-            )
-        if color_jiter:
-            transforms_list.append(transforms.ColorJitter(0.5, 0.5, 0.5))
-        if solarize:
-            transforms_list.append(transforms.RandomSolarize(0.5, p=1))
-        return transforms_list
+        self.transforms_list = [
+            AUGMENTATION[augmentation_item]
+            for augmentation_item in augmentations.split(",")
+        ]
 
     def image_augmentation(self, image: torch.Tensor):
         """

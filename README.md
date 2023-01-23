@@ -60,21 +60,26 @@ We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-obje
     ```
 - you don't have nvcc?  use: `sudo apt install nvidia-cuda-toolkit`
 - you have problem using .cuda() with torch? install the torch version that correspond to your cuda version, the same that you used for cupy
-- `"/usr/include/math_functions.h"` file is not found ? It may be in a different location for you. In `src/style_transfer/smooth_filter.py`, modify line 6 path with your own path
+- `"/usr/include/math_functions.h"` file is not found ? It may be in a different location for you. In `src/style_transfer/smooth_filter.py`, modify line 6 path with your own path. You can find your path with the command line: `find / -name math_functions.h`
 ## Run inference script
 `python -m scripts.main`
 ```bash
 Options:
- --number-of-tasks INTEGER            [default: 100]
- --color-aware / --no-color-aware     [default: no-color-aware]
- --style-transfer-augmentation / --no-style-transfer-augmentation
-                                      [default: no-style-transfer-augmentation]
- --dataset-used TEXT                   [default: abo]
- --save-results / --no-save-results   [default: save-results]
- --help                          Show help message and exit.
+  --number-of-tasks INTEGER       [default: 100]
+  --color-aware / --no-color-aware
+                                  [default: no-color-aware]
+  --style-transfer-augmentation / --no-style-transfer-augmentation
+                                  [default: no-style-transfer-augmentation]
+  --basic-augmentation TEXT
+  --dataset-used TEXT             [default: abo]
+  --save-results / --no-save-results
+                                  [default: save-results]
+  --help                          Show this message and exit.
 
 ```
 :warning: in order to save the results, you need a exp_results folder at the root of the repo: `mkdir exp_results`
+
+:bulb: For basic-augmentation, you have the choice in the following list: rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize. You can choose none, one, or several. Always separated by a ',' only.
 ## References
 [1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu, Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen, Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset and benchmarks for real-world 3d object understanding. CVPR, 2022.
 

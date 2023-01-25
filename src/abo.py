@@ -55,7 +55,7 @@ class ABO(FewShotDataset):
         colors_json: Optional[Path],
         min_number_item_per_class: int,
     ) -> Tuple[DataFrame, List[str]]:
-        data = pd.read_csv(specs_file)
+        data = pd.read_csv(specs_file).drop_duplicates(subset=["path"])
         if colors_json is not None:
             with open(ROOT_FOLDER / colors_json) as json_file:
                 data = data[data.en_color.isin(json.load(json_file)["selected"])]
@@ -82,11 +82,7 @@ class ABO(FewShotDataset):
             logger.info(
                 f"Removed classes {removed_classes} because they had less than {str(min_number_item_per_class)} elements."
             )
-        data = (
-            data[data.product_type.isin(class_names)]
-            .drop_duplicates(subset=["path"])
-            .reset_index()
-        )
+        data = data[data.product_type.isin(class_names)].reset_index()
         label_mapping = {name: class_names.index(name) for name in class_names}
 
         return (

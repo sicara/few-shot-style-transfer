@@ -1,6 +1,7 @@
 from pathlib import Path
 import random
 import typer
+from loguru import logger
 import time
 from datetime import datetime
 from torch.utils.data import DataLoader
@@ -73,7 +74,7 @@ def main(
         test_sampler = ColorAwareTaskSampler(
             dataset, n_query=n_query, n_tasks=number_of_tasks
         )
-        print("--Color Task Sampler used")
+        logger.info("--Color Task Sampler used")
         message += "color_"
     else:
         test_sampler = NonColorAwareTaskSampler(
@@ -97,10 +98,10 @@ def main(
         basic_augmentation=basic_augmentation,
     )
     if style_transfer_augmentation:
-        print("--Style transfer augmented support sets")
+        logger.info("--Style transfer augmented support sets")
         message += "style_"
     if basic_augmentation is not None:
-        print(f"--Basic transforms ({basic_augmentation}) augmented support sets")
+        logger.info(f"--Basic transforms ({basic_augmentation}) augmented support sets")
         for augmentation in basic_augmentation.split(","):
             message += f"{augmentation}_"
 
@@ -110,25 +111,28 @@ def main(
             f"exp_{number_of_tasks}_{dataset_used}_{message}"
             f"{datetime.now().strftime('%d:%m:%Y_%H:%M:%S')}.csv"
         )
-    print("Execution time: ", round(time.time() - start_time, 2), "s")
-    print(
-        "Accuracy for samples with same color as class representative: ",
-        compute_accuracy_for_samples_with_same_color_as_class_representative(
-            classified_dataset
-        ),
+    logger.info(f"Execution time: {round(time.time() - start_time, 2)} s")
+    (
+        A_same,
+        same_set,
+    ) = compute_accuracy_for_samples_with_same_color_as_class_representative(
+        classified_dataset
     )
-    print(
-        "Accuracy for samples with same color as other class representative: ",
-        compute_accuracy_for_samples_with_same_color_as_other_class_representative(
-            classified_dataset
-        ),
+    logger.success(f"A_same: {round(A_same, 2)}%, on {same_set} samples")
+    (
+        A_other,
+        other_set,
+    ) = compute_accuracy_for_samples_with_same_color_as_other_class_representative(
+        classified_dataset
     )
-    print(
-        "Accuracy for samples with same color as none of the class representative: ",
-        compute_accuracy_for_samples_with_same_color_as_no_class_representative(
-            classified_dataset
-        ),
+    logger.success(f"A_other: {round(A_other,2)}%, on {other_set} samples")
+    (
+        A_none,
+        none_set,
+    ) = compute_accuracy_for_samples_with_same_color_as_no_class_representative(
+        classified_dataset
     )
+    logger.success(f"A_none: {round(A_none,2)}%, on {none_set} samples")
     print("-------------------------------------------------")
 
 

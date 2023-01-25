@@ -29,7 +29,7 @@ def compute_accuracy_for_one_task(query_results: pd.DataFrame, task_id: int) -> 
 
 def compute_accuracy_for_samples_with_same_color_as_class_representative(
     query_results: pd.DataFrame,
-) -> float:
+):
     query_results_same_color_as_class_representative = pd.concat(
         [
             query_results[
@@ -50,13 +50,14 @@ def compute_accuracy_for_samples_with_same_color_as_class_representative(
             ]
         )
         / len(query_results_same_color_as_class_representative)
-        * 100
+        * 100,
+        len(query_results_same_color_as_class_representative),
     )
 
 
 def compute_accuracy_for_samples_with_same_color_as_other_class_representative(
     query_results: pd.DataFrame,
-) -> float:
+):
     query_results_same_color_as_other_class_representative = pd.concat(
         [
             query_results[
@@ -79,13 +80,14 @@ def compute_accuracy_for_samples_with_same_color_as_other_class_representative(
             ]
         )
         / len(query_results_same_color_as_other_class_representative)
-        * 100
+        * 100,
+        len(query_results_same_color_as_other_class_representative),
     )
 
 
 def compute_accuracy_for_samples_with_same_color_as_no_class_representative(
     query_results: pd.DataFrame,
-) -> float:
+):
     query_results_same_color_as_no_class_representative = query_results[
         (query_results["color"] != query_results["support_set_0_color"])
         & (query_results["color"] != query_results["support_set_1_color"])
@@ -100,7 +102,8 @@ def compute_accuracy_for_samples_with_same_color_as_no_class_representative(
             ]
         )
         / len(query_results_same_color_as_no_class_representative)
-        * 100
+        * 100,
+        len(query_results_same_color_as_no_class_representative),
     )
 
 

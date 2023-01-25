@@ -29,20 +29,24 @@ class CUB(FewShotDataset):
         data = pd.read_csv(specs_file)
         return data
 
-    def __getitem__(self, item: int) -> Tuple[Tensor, int, str]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int, str, str]:
         img = self.transform(
             Image.open(self.root / self.data.path[item]).convert("RGB")
         )
         label = self.data.class_id[item]
         color = self.data.annotated_attribute_id[item]
+        img_path = self.data.path[item]
 
-        return img, label, color
+        return img, label, color, img_path
 
     def get_item_label(self, item: int) -> int:
         return self.data.class_id[item]
 
     def get_item_color(self, item: int) -> str:
         return self.data.annotated_attribute_id[item]
+
+    def get_item_img_path(self, item: int) -> str:
+        return self.data.path[item]
 
     def __len__(self) -> int:
         return len(self.data)
@@ -52,3 +56,6 @@ class CUB(FewShotDataset):
 
     def get_colors(self) -> List[str]:
         return list(self.data.annotated_attribute_id)
+
+    def get_img_path(self) -> List[str]:
+        return list(self.data.path)

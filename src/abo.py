@@ -82,8 +82,11 @@ class ABO(FewShotDataset):
             logger.info(
                 f"Removed classes {removed_classes} because they had less than {str(min_number_item_per_class)} elements."
             )
-        data = data[data.product_type.isin(class_names)].reset_index()
-
+        data = (
+            data[data.product_type.isin(class_names)]
+            .drop_duplicates(subset=["path"])
+            .reset_index()
+        )
         label_mapping = {name: class_names.index(name) for name in class_names}
 
         return (
@@ -91,20 +94,24 @@ class ABO(FewShotDataset):
             class_names,
         )
 
-    def __getitem__(self, item: int) -> Tuple[Tensor, int, str]:
+    def __getitem__(self, item: int) -> Tuple[Tensor, int, str, str]:
         img = self.transform(
             Image.open(self.root / self.data.path[item]).convert("RGB")
         )
         label = self.data.label[item]
         color = self.data.en_color[item]
+        img_path = self.data.path[item]
 
-        return img, label, color
+        return img, label, color, img_path
 
     def get_item_label(self, item: int) -> int:
         return self.data.label[item]
 
     def get_item_color(self, item: int) -> str:
         return self.data.en_color[item]
+
+    def get_item_img_path(self, item: int) -> str:
+        return self.data.path[item]
 
     def __len__(self) -> int:
         return len(self.data)
@@ -114,3 +121,6 @@ class ABO(FewShotDataset):
 
     def get_colors(self) -> List[str]:
         return list(self.data.en_color)
+
+    def get_img_path(self) -> List[str]:
+        return list(self.data.path)

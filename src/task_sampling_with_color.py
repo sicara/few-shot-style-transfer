@@ -37,6 +37,7 @@ class TaskSamplerWithColor(TaskSampler):
                 "item": [i for i in range(len(dataset))],
                 "label": dataset.get_labels(),
                 "color": dataset.get_colors(),
+                "img_path": dataset.get_img_path(),
             }
         )
         self.colors_list = list(self.items_df["color"].unique())
@@ -52,7 +53,7 @@ class TaskSamplerWithColor(TaskSampler):
 
     @abstractmethod
     def episodic_collate_fn(
-        self, input_data: List[Tuple[Tensor, int, str]]
+        self, input_data: List[Tuple[Tensor, int, str, str]]
     ) -> Tuple[Tensor, Tensor, List[str], Tensor, Tensor, List[str], List[int]]:
         """
         Collate function to be used as argument for the collate_fn parameter of episodic
@@ -74,6 +75,7 @@ class TaskSamplerWithColor(TaskSampler):
         """
         true_class_ids = list({x[1] for x in input_data})
         colors_list = list(x[2] for x in input_data)
+        img_path_list = list(x[3] for x in input_data)
 
         all_images = torch.cat([x[0].unsqueeze(0) for x in input_data])
         all_images = all_images.reshape(
@@ -96,14 +98,21 @@ class TaskSamplerWithColor(TaskSampler):
             colors_list[1 : self.n_query + 1]
             + colors_list[self.n_query + self.n_shot + 1 :]
         )
+        support_img_path = [img_path_list[0], img_path_list[self.n_query + self.n_shot]]
+        query_img_path = (
+            img_path_list[1 : self.n_query + 1]
+            + img_path_list[self.n_query + self.n_shot + 1 :]
+        )
 
         return (
             support_images,
             support_labels,
             support_colors,
+            support_img_path,
             query_images,
             query_labels,
             query_colors,
+            query_img_path,
             true_class_ids,
         )
 

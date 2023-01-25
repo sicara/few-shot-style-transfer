@@ -113,10 +113,12 @@ class EvaluatorFewShotClassifierWColor:
                 support_images,
                 support_labels,
                 support_colors,
+                support_img_path,
                 query_images,
                 query_labels,
                 query_colors,
-                class_ids,
+                query_img_path,
+                true_class_ids,
             ) in tqdm(enumerate(data_loader), total=len(data_loader)):
                 if style_transfer_augmentation:
                     (
@@ -144,6 +146,9 @@ class EvaluatorFewShotClassifierWColor:
                             "color": query_colors,
                             "support_set_0_color": support_colors[0],
                             "support_set_1_color": support_colors[1],
+                            "img_path": query_img_path,
+                            "support_set_0_img_path": support_img_path[0],
+                            "support_set_1_img_path": support_img_path[1],
                         }
                     )
                 )

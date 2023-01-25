@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from loguru import logger
 import torch
 from torch.utils.data import DataLoader
 from statistics import mean, stdev
@@ -69,8 +70,9 @@ class EvaluatorFewShotClassifier:
                 )
                 accuracy.append(100 * correct / total)
 
-        print(
-            f"Model tested on {len(data_loader)} tasks. Accuracy: {mean(accuracy):.2f}% +/- {(1.96*stdev(accuracy)/np.sqrt(len(accuracy))):.2f}"
+        logger.info(f"Model tested on {len(data_loader)} tasks.")
+        logger.success(
+            f"Accuracy: {mean(accuracy):.2f}% +/- {(1.96*stdev(accuracy)/np.sqrt(len(accuracy))):.2f}"
         )
 
 
@@ -145,7 +147,8 @@ class EvaluatorFewShotClassifierWColor:
                         }
                     )
                 )
-        print(
-            f"Model tested on {len(data_loader)} tasks. Accuracy: {mean(accuracy):.2f}% +/- {(1.96*stdev(accuracy)/np.sqrt(len(accuracy))):.2f}"
+        logger.info(f"Model tested on {len(data_loader)} tasks.")
+        logger.success(
+            f"Accuracy: {mean(accuracy):.2f}% +/- {(1.96*stdev(accuracy)/np.sqrt(len(accuracy))):.2f}"
         )
         return pd.concat(job_result_list, ignore_index=True)

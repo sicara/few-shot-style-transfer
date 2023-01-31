@@ -22,10 +22,7 @@ from src.evaluator_utils import (
 )
 from src.style_transfer.fast_photo_style import FastPhotoStyle
 from src.basic_data_augmentation import BasicDataAugmentation
-from src.few_shot_classifier import (
-    EvaluatorFewShotClassifier,
-    EvaluatorFewShotClassifierWColor,
-)
+from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 from src.task_sampling_with_color import NonColorAwareTaskSampler, ColorAwareTaskSampler
 
 #%%

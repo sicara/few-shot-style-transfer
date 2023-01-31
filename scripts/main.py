@@ -92,6 +92,7 @@ def main(
     convolutional_network = resnet18(pretrained=True)
     convolutional_network.fc = nn.Flatten()
     few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+    few_shot_model.eval()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
         test_loader,
         style_transfer_augmentation=style_transfer_augmentation,

@@ -12,6 +12,7 @@ from torchvision.models import resnet18
 
 from easyfsl.utils import plot_images
 from easyfsl.methods.prototypical_networks import PrototypicalNetworks
+from easyfsl.methods.tim import TIM
 
 from src.abo import ABO
 from src.cub import CUB
@@ -27,6 +28,7 @@ from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 def main(
     number_of_tasks: int = 100,
     color_aware: bool = False,
+    few_shot_method: str = "prototypical",
     style_transfer_augmentation: bool = False,
     basic_augmentation: str = None,
     dataset_used: str = "abo",
@@ -37,7 +39,10 @@ def main(
     Args:
         number_of_tasks (int, optional): Number of few-shot tasks to do. Defaults to 100.
         color_aware (bool, optional): Whether or not you want to build tasks knowing the colors. Defaults to False.
+        few_shot_method (str, optional): The few-shot classifier used, either 'prototypical', 'tim', 'finetune'. Defaults to 'prototypical'.
         style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
+        basic_augmentation (str, optional): The basic transforms used as support set augmentation, taken in the following 
+            'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize'. Defaults to None.
         dataset_used (str, optional): The dataset used, either 'abo' or 'cub'. Defaults to 'abo'.
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.
 
@@ -68,7 +73,7 @@ def main(
             colors_json=Path("data/selected_and_removed_colors.json"),
         )
     else:
-        raise ValueError("Invalid dataset input")
+        raise ValueError("Invalid dataset input. Should be either 'abo' or 'cub'.")
 
     if color_aware:
         test_sampler = ColorAwareTaskSampler(
@@ -91,7 +96,15 @@ def main(
 
     convolutional_network = resnet18(pretrained=True)
     convolutional_network.fc = nn.Flatten()
-    few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+    if few_shot_method == "prototypical":
+        few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+        logger.info("Prototypical Network used")
+    elif few_shot_method == "tim":
+        few_shot_model = TIM(convolutional_network).cuda()
+        logger.info("TIM model used")
+        message += "tim_"
+    else:
+        raise ValueError("Unknown few-shot method. Should be either 'prototypical' or 'tim'.")
     few_shot_model.eval()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
         test_loader,

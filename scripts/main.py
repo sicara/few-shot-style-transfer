@@ -24,6 +24,8 @@ from src.evaluator_utils import (
 from src.task_sampling_with_color import ColorAwareTaskSampler, NonColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
+FEW_SHOT_MODELS = {"prototypical": PrototypicalNetworks, "tim": TIM, "finetune": Finetune}
+CONVOLUTIONAL_NETWORK = resnet18(pretrained=True)
 
 def main(
     number_of_tasks: int = 100,
@@ -94,11 +96,10 @@ def main(
         collate_fn=test_sampler.episodic_collate_fn,
     )
 
-    convolutional_network = resnet18(pretrained=True)
+    convolutional_network = CONVOLUTIONAL_NETWORK
     convolutional_network.fc = nn.Flatten()
-    few_shot_models = {"prototypical": PrototypicalNetworks, "tim": TIM, "finetune": Finetune}
-    if few_shot_method in few_shot_models:
-        few_shot_model = few_shot_models[few_shot_method](convolutional_network).cuda()
+    if few_shot_method in FEW_SHOT_MODELS:
+        few_shot_model = FEW_SHOT_MODELS[few_shot_method](convolutional_network).cuda()
         logger.info(f"--{few_shot_method} model used")
         message += f"{few_shot_method}_"
     else:

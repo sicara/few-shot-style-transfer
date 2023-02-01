@@ -10,9 +10,9 @@ import torch
 from torchvision import transforms
 from torchvision.models import resnet18
 
-from easyfsl.utils import plot_images
 from easyfsl.methods.prototypical_networks import PrototypicalNetworks
 from easyfsl.methods.tim import TIM
+from easyfsl.methods.finetune import Finetune
 
 from src.abo import ABO
 from src.cub import CUB
@@ -103,8 +103,12 @@ def main(
         few_shot_model = TIM(convolutional_network).cuda()
         logger.info("TIM model used")
         message += "tim_"
+    elif few_shot_method == "finetune":
+        few_shot_model = Finetune(convolutional_network).cuda()
+        logger.info("Fine tune model used")
+        message += "finetune_"
     else:
-        raise ValueError("Unknown few-shot method. Should be either 'prototypical' or 'tim'.")
+        raise ValueError("Unknown few-shot method. Should be either 'prototypical' or 'tim' or 'finetune.")
     few_shot_model.eval()
     classified_dataset = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate(
         test_loader,

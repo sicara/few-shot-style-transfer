@@ -26,7 +26,7 @@ dino_model_name: dino_vitb8 # ['dino_vitb8', 'dino_vits8', 'dino_vitb16', 'dino_
 dino_global_patch_size: 224
 
 cls_warmup: 1
-n_epochs: 3
+n_epochs: 5000
 scheduler_policy: none  # [linear | step | plateau | cosine | none]
 scheduler_n_epochs_decay: 8
 scheduler_lr_decay_iters: 300

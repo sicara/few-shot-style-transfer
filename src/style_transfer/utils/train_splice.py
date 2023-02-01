@@ -80,7 +80,7 @@ def train_model(dataroot, callback=None):
             loss_G.backward()
             optimizer.step()
             scheduler.step()
-    torch.save(model, "model_saved")
+    torch.save(model, "src/style_transfer/outputs/model_saved")
 
 
 if __name__ == "__main__":

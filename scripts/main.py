@@ -96,17 +96,11 @@ def main(
 
     convolutional_network = resnet18(pretrained=True)
     convolutional_network.fc = nn.Flatten()
-    if few_shot_method == "prototypical":
-        few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
-        logger.info("Prototypical Network used")
-    elif few_shot_method == "tim":
-        few_shot_model = TIM(convolutional_network).cuda()
-        logger.info("TIM model used")
-        message += "tim_"
-    elif few_shot_method == "finetune":
-        few_shot_model = Finetune(convolutional_network).cuda()
-        logger.info("Fine tune model used")
-        message += "finetune_"
+    few_shot_models = {"prototypical": PrototypicalNetworks, "tim": TIM, "finetune": Finetune}
+    if few_shot_method in few_shot_models:
+        few_shot_model = few_shot_models[few_shot_method](convolutional_network).cuda()
+        logger.info(f"--{few_shot_method} model used")
+        message += f"{few_shot_method}_"
     else:
         raise ValueError("Unknown few-shot method. Should be either 'prototypical' or 'tim' or 'finetune.")
     few_shot_model.eval()

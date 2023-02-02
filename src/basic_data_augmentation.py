@@ -16,6 +16,7 @@ AUGMENTATION = {
     "horizontal_flipping": transforms.RandomHorizontalFlip(1),
     "color_jiter": transforms.ColorJitter(0.5, 0.5, 0.5),
     "solarize": transforms.RandomSolarize(0.5, p=1),
+    "grayscale": transforms.Grayscale(num_output_channels=3),
 }
 
 
@@ -28,7 +29,8 @@ class BasicDataAugmentation:
         """
         Args:
             augmentations: a string defining each transformation to apply divided by a ','. The possible transforms are:
-            'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize'. Default to empty string.
+            'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize, grayscale'.
+            Default to empty string.
             image_size: the image size. Defaults to 112.
         """
         self.transforms_list = [

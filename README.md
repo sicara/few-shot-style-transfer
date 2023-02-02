@@ -68,6 +68,7 @@ Options:
   --number-of-tasks INTEGER       [default: 100]
   --color-aware / --no-color-aware
                                   [default: no-color-aware]
+  --few-shot-method TEXT          [default: prototypical]
   --style-transfer-augmentation / --no-style-transfer-augmentation
                                   [default: no-style-transfer-augmentation]
   --basic-augmentation TEXT

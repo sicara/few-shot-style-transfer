@@ -16,8 +16,9 @@ You will need :
     - check [this](https://docs.cupy.dev/en/stable/install.html) to know how to install CuPy adapted to your cuda toolkit version
     - for example, if `nvcc --version` says that you have the 10.1 release of the cuda toolkit, install CuPy with pip using `pip install cupy-cuda101`
 
-### Dataset
-We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-objects.s3.amazonaws.com/index.html). Here are the steps to install locally the dataset, needed to run the script of this repo:
+### Datasets
+#### ABO
+We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-objects.s3.amazonaws.com/index.html). Here are the steps to install locally the dataset, needed to run the script of this repo with ABO:
 - download ABO's metadata and images: `curl link.tar -L -O -J`
     - [ABO_metadata](https://amazon-berkeley-objects.s3.amazonaws.com/archives/abo-listings.tar)
     - [ABO_downscaled_images](https://amazon-berkeley-objects.s3.amazonaws.com/archives/abo-images-small.tar)
@@ -43,6 +44,35 @@ We used the [Amazon Berkeley Objects (ABO) Dataset](https://amazon-berkeley-obje
     ```bash
     mkdir new_folder_name # create a folder (where the command is run)
     mv source target # move source folder into target folder
+    ```
+#### CUB
+We used the [Caltech-UCSD Birds-200-2011 (CUB-200-2011)](https://www.vision.caltech.edu/datasets/cub_200_2011/). Here are the steps to install locally the dataset, needed to run the script of this repo with CUB:
+- dowload CUB's images and annotations: https://data.caltech.edu/records/65de6-vp158/files/CUB_200_2011.tgz?download=1
+- decompress the .tgz folder
+- you must organize the data folder as follows:
+   ```
+    data
+      |--cub_dataset
+            |--attributes
+            |   |--atributes.txt
+            |   |--certainties.txt
+            |   |-- ...
+            |
+            |--images
+            |   |--***.*******
+            |   |-- ...
+            |
+            |--parts
+            |   |-- ...
+            |
+            |--splits
+            |   |-- ...
+            |
+            |--classes.txt
+            |--image_class_labels.txt
+            |--images.txt
+            |--train_test_split.txt
+            |--README
     ```
 ### Troubleshooting
 - error while installing requirements? try: `pip install --upgrade pip`
@@ -81,6 +111,10 @@ Options:
 :warning: in order to save the results, you need a exp_results folder at the root of the repo: `mkdir exp_results`
 
 :bulb: For basic-augmentation, you have the choice in the following list: rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize. You can choose none, one, or several. Always separated by a ',' only.
+
+:bulb: For few-shot-method, you have the choice between: prototypical, finetune, tim
+
+:bulb: For dataset-used, you have the choice between: abo, cub
 ## References
 [1] Jasmine Collins, Shubham Goel, Kenan Deng, Achleshwar Luthra, Leon Xu, Erhan Gundogdu, Xi Zhang, Tomas F Yago Vicente, Thomas Dideriksen, Himanshu Arora, Matthieu Guillaumin, and Jitendra Malik. Abo: Dataset and benchmarks for real-world 3d object understanding. CVPR, 2022.
 

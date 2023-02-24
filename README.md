@@ -110,7 +110,7 @@ Options:
 ```
 :warning: in order to save the results, you need a exp_results folder at the root of the repo: `mkdir exp_results`
 
-:bulb: For basic-augmentation, you have the choice in the following list: rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize. You can choose none, one, or several. Always separated by a ',' only.
+:bulb: For basic-augmentation, you have the choice in the following list: rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize,grayscale. You can choose none, one, or several. Always separated by a ',' only.
 
 :bulb: For few-shot-method, you have the choice between: prototypical, finetune, tim
 

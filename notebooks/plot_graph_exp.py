@@ -13,7 +13,7 @@ N_QUERY = 16  # Number of images per class in the query set
 N_EVALUATION_TASKS = 1000
 #%%
 prediction = pd.read_csv(
-    "/home/sicara/R&D/few-shot-style-transfer/exp_results/exp_1000_abo_color_05:01:2023_15:13:07.csv"
+    "/home/sicara/R&D/few-shot-style-transfer/exp_results/exp_1000_abo_05:01:2023_15:11:41.csv"
 ).drop("Unnamed: 0", axis=1)
 #%%
 plot_task_accuracy_and_color_indexes(prediction)
@@ -89,4 +89,15 @@ ax2.bar(
 ax2.grid(False)
 ax2.set_ylabel("nb")
 plt.show()
+# %%
+from statistics import mean, stdev
+
+nb_of_color_per_task = []
+for task_id in range(N_EVALUATION_TASKS):
+    nb_of_color_per_task.append(
+        len(prediction.loc[prediction["task_id"] == task_id]["color"].unique())
+    )
+mean(nb_of_color_per_task), 1.96 * stdev(nb_of_color_per_task) / np.sqrt(
+    len(nb_of_color_per_task)
+), min(nb_of_color_per_task), max(nb_of_color_per_task)
 # %%

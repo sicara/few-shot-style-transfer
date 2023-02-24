@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import seaborn
 
+from src.cub import CUB
+
 #%%
 root = Path("data/abo_dataset/images/small")
 image_size = 112
@@ -22,10 +24,25 @@ dataset = ABO(
     classes_json=Path("data/selected_and_matched_abo_classes.json"),
     colors_json=Path("data/selected_and_removed_colors.json"),
 )
-# %%
 color_class_grouped_df = pd.DataFrame(
     dataset.data.groupby(["label", "en_color"])["index"].count()
 )
+#%%
+root_cub = Path("data/cub_dataset/images")
+dataset_cub = CUB(
+    root=root,
+    transform=transforms.Compose(
+        [
+            transforms.RandomResizedCrop(image_size),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+        ]
+    ),
+)
+color_class_grouped_df_cub = pd.DataFrame(
+    dataset_cub.data.groupby(["class_id", "color"])["image_id"].count()
+)
+# %%
 color_X_class_dict = dict(
     (color, [0] * len(dataset.class_names)) for color in np.unique(dataset.get_colors())
 )
@@ -38,6 +55,22 @@ color_X_class_list = []
 for key in color_X_class_dict:
     color_X_class_list.append(color_X_class_dict[key])
 # %%
+nb_color_per_class = [0] * 64
+for label, color in color_class_grouped_df.index:
+    nb_color_per_class[label] += 1
+nb_color_per_class_cub = [0] * 200
+for label, color in color_class_grouped_df_cub.index:
+    nb_color_per_class_cub[label - 1] += 1
+import matplotlib.pyplot as plt
+
+bins = np.linspace(0.5, 16.5, 16)
+plt.hist(nb_color_per_class, bins, alpha=0.5, label="abo")
+plt.hist(nb_color_per_class_cub, bins, alpha=0.5, label="cub")
+plt.legend(loc="upper right")
+plt.xlabel("number of color in one class")
+plt.ylabel("number of classes")
+plt.show()
+#%%
 ax = seaborn.heatmap(
     color_X_class_list, yticklabels=np.unique(dataset.get_colors()), vmax=8
 )

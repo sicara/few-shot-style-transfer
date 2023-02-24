@@ -6,7 +6,7 @@ test:
 all_exp:
 	for task_sampler in --color-aware --no-color-aware; do\
 	    for model in prototypical tim finetune; do\
-		    for augmentation in rotation deformation cropping vertical_flipping horizontal_flipping color_jiter solarize; do\
+		    for augmentation in rotation deformation cropping vertical_flipping horizontal_flipping color_jiter solarize grayscale; do\
 		        python -m scripts.main --number-of-tasks $(N_TASKS) $${task_sampler} --few-shot-method $${model} --basic-augmentation $${augmentation} ;\
 		    done ;\
 			python -m scripts.main --number-of-tasks $(N_TASKS) $${task_sampler} --few-shot-method $${model} ;\

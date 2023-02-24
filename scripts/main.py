@@ -24,8 +24,13 @@ from src.evaluator_utils import (
 from src.task_sampling_with_color import ColorAwareTaskSampler, NonColorAwareTaskSampler
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 
-FEW_SHOT_MODELS = {"prototypical": PrototypicalNetworks, "tim": TIM, "finetune": Finetune}
+FEW_SHOT_MODELS = {
+    "prototypical": PrototypicalNetworks,
+    "tim": TIM,
+    "finetune": Finetune,
+}
 CONVOLUTIONAL_NETWORK = resnet18(pretrained=True)
+
 
 def main(
     number_of_tasks: int = 100,
@@ -43,7 +48,7 @@ def main(
         color_aware (bool, optional): Whether or not you want to build tasks knowing the colors. Defaults to False.
         few_shot_method (str, optional): The few-shot classifier used, either 'prototypical', 'tim', 'finetune'. Defaults to 'prototypical'.
         style_transfer_augmentation (bool, optional): Whether or not you want to augment the support sets with style transfer. Defaults to False.
-        basic_augmentation (str, optional): The basic transforms used as support set augmentation, taken in the following 
+        basic_augmentation (str, optional): The basic transforms used as support set augmentation, taken in the following
             'rotation,deformation,cropping,vertical_flipping,horizontal_flipping,color_jiter,solarize'. Defaults to None.
         dataset_used (str, optional): The dataset used, either 'abo' or 'cub'. Defaults to 'abo'.
         save_results (bool, optional): Whether or not you want to save the results as a csv. Defaults to True.

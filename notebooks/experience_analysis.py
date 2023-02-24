@@ -7,6 +7,7 @@ from torchvision.models import resnet18
 
 from easyfsl.utils import plot_images
 from easyfsl.methods.prototypical_networks import PrototypicalNetworks
+from easyfsl.methods.tim import TIM
 from src.few_shot_classifier import EvaluatorFewShotClassifierWColor
 from src.config import ROOT_FOLDER
 from src.evaluator_utils import compute_accuracy_for_one_task
@@ -17,7 +18,7 @@ from src.style_transfer.fast_photo_style import FastPhotoStyle
 IMAGE_FOLDER_PATH = "data/abo_dataset/images/small"
 #%% Load exp result from csv
 prediction = pd.read_csv(
-    "/home/sicara/R&D/few-shot-style-transfer/exp_results/exp_100_abo_color_25:01:2023_16:52:29.csv"
+    "/home/sicara/R&D/few-shot-style-transfer/exp_results/exp_100_abo_finetune_rotation_07:02:2023_11:22:07.csv"
 ).drop("Unnamed: 0", axis=1)
 #%% find task with the lower accuracy
 min_accuracy = 100
@@ -30,7 +31,7 @@ for task_id in prediction["task_id"].unique():
         min_accuracy_index = task_id
 min_accuracy, min_accuracy_index
 # %% get image path to reconstitute task
-min_acc_task = prediction[prediction["task_id"] == min_accuracy_index]
+min_acc_task = prediction[prediction["task_id"] == 2]
 support_img_path = (
     min_acc_task["support_set_0_img_path"].unique().tolist()
     + min_acc_task["support_set_1_img_path"].unique().tolist()
@@ -42,43 +43,56 @@ to_tensor = transforms.Compose(
         transforms.Pad(256, fill=255),
         transforms.CenterCrop(256),
         transforms.Resize(112),
+        # transforms.RandomSolarize(0.5, p=1),
+        # transforms.Grayscale(num_output_channels=3),
+        # transforms.ColorJitter(0.5, 0.5, 0.5),
+        transforms.ToTensor(),
+    ]
+)
+to_tensor2 = transforms.Compose(
+    [
+        # transforms.CenterCrop(256),
+        transforms.Resize((256, 256)),
+        # transforms.RandomSolarize(0.5, p=1),
+        # transforms.Grayscale(num_output_channels=3),
+        # transforms.ColorJitter(0.5, 0.5, 0.5),
         transforms.ToTensor(),
     ]
 )
 #%% build custom dataset
 support_img_path = [
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_1.jpg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_1.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_2.jpeg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_2.jpg",
 ]
 query_img_path = [
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/black_chair_1.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/black_chair_2.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/black_chair_3.jpeg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/black_chair_4.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_1.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_2.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_2.jpeg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_1.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_2.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_3.png",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_4.jpeg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_5.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_6.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_7.jpeg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_2.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/green_chair_6.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_7.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_5.jpeg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_3.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_4.jpg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_5.jpeg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_1.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/chair/red_chair_6.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/black_lamp_1.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/black_lamp_2.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/black_lamp_3.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/black_lamp_4.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_6.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_7.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_2.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_3.jpg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_4.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_1.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_5.jpg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_6.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_1.jpg",
-    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_2.jpg",
+    "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/greeen_lamp_4.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_3.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_4.jpg",
     "/home/sicara/R&D/few-shot-style-transfer/data/custom_tasks/lamp/red_lamp_5.jpg",
@@ -89,7 +103,7 @@ query_images = []
 for path in support_img_path:
     support_images.append(to_tensor(Image.open(path).convert("RGB")))
 for path in query_img_path:
-    query_images.append(to_tensor(Image.open(path).convert("RGB")))
+    query_images.append(to_tensor2(Image.open(path).convert("RGB")))
 query_labels = torch.Tensor([0] * 16 + [1] * 16)
 support_labels = torch.Tensor([0, 1])
 query_images = torch.stack(query_images)
@@ -115,24 +129,24 @@ support_labels = torch.Tensor(min_acc_task["true_label"].unique())
 query_images = torch.stack(query_images)
 support_images = torch.stack(support_images)
 # %% plot support and query set
-plot_images(support_images, title="support set", images_per_row=2)
-plot_images(query_images, title="query set", images_per_row=8)
+plot_images(support_images, title="", images_per_row=2)
+plot_images(query_images, title="", images_per_row=8)
 #%%
-support_images, support_labels = BasicDataAugmentation(
-    "color_jiter"
-).augment_support_set(support_images, support_labels)
+support_images, support_labels = BasicDataAugmentation("rotation").augment_support_set(
+    support_images, support_labels
+)
 #%%
 support_images, support_labels = FastPhotoStyle().augment_support_set(
     support_images, support_labels
 )
 #%%
-plot_images(support_images, title="support set", images_per_row=2)
+plot_images(support_images, title="", images_per_row=2)
 # %% visualize single image
 Image.open(ROOT_FOLDER / IMAGE_FOLDER_PATH / "71/71199226.jpg").convert("RGB")
 #%% define few shot model
 convolutional_network = resnet18(pretrained=True)
 convolutional_network.fc = torch.nn.Flatten()
-few_shot_model = PrototypicalNetworks(convolutional_network).cuda()
+few_shot_model = TIM(convolutional_network, use_softmax=True).cuda()
 few_shot_model.eval()
 #%% get prediction
 prediction = EvaluatorFewShotClassifierWColor(few_shot_model).evaluate_on_one_task(

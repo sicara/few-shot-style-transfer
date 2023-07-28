@@ -11,3 +11,4 @@ scipy>=1.9.2
 imageio>=2.22.1
 typer>=0.7.0
 opencv-python>=4.7.0.68
+pyyaml>=6.0
